@@ -1,0 +1,165 @@
+/* ===== Base ===== */
+
+body {
+    width: 400px;
+    height: 540px;
+    background: linear-gradient(180deg, #0d1117, #161b22);
+    color: #e6edf3;
+    font-family: "Segoe UI", monospace;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ===== Header ===== */
+
+.header {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #7ee787;
+    padding: 12px 0;
+    border-bottom: 1px solid #21262d;
+}
+
+/* ===== Main ===== */
+
+.main {
+    margin-left: 60px;
+    padding: 12px;
+    overflow-y: auto;
+}
+
+/* ===== Cards ===== */
+
+.card {
+    background: #161b22;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* ===== Card Header ===== */
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.card-title {
+    color: #58a6ff;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* ===== Copy Button ===== */
+
+.copy-btn {
+    background: #21262d;
+    border: none;
+    color: #7ee787;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.copy-btn:hover {
+    background: #30363d;
+}
+
+/* ===== Text ===== */
+
+.card-content {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #c9d1d9;
+    white-space: pre-wrap;
+}
+
+/* ===== Bottom Bar ===== */
+
+.bottom-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60px;
+    height: 100%;
+    background: #0d1117;
+    border-right: 1px solid #21262d;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    padding-top: 10px;
+}
+
+
+
+
+/* ===== Tabs ===== */
+
+.tab {
+    width: 100%;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.tab span {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 2px;
+}
+
+.tab.active {
+    color: #7ee787;
+}
+
+.tab:hover {
+    background: #161b22;
+}
+
+/* ===== Pages ===== */
+
+.tab-page {
+    display: none;
+}
+
+.tab-page.active {
+    display: block;
+}
+
+/* ===== Scrollbar ===== */
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-radius: 6px;
+}
+.copy-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.copy-msg {
+    font-size: 10px;
+    color: #7ee787;
+    margin-top: 2px;
+    display: none;
+}
