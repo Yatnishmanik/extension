@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "Promptimity",
+  "version": "1.0.0",
+  "description": "Your ultimate AI side-panel. Analyze, refine, and inject powerful prompts into ChatGPT, Claude, and Gemini with local LLM integration.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "tabs",
+    "sidePanel"
+  ],
+  "side_panel": {
+    "default_path": "popup/panel.html"
+  },
+  "action": {
+    "default_title": "Open Promptimity"
+  },
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://gemini.google.com/*",
+    "https://claude.ai/*",
+    "https://api.x.ai/*",
+    "http://localhost:11434/*",
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "popup/inject.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "data/*.json"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}
