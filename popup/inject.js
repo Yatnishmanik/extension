@@ -242,3 +242,79 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
     // Explicitly return true to indicate we will respond asynchronously (or sync, but keeps port open safely)
     return true; 
 });
+
+// --- SUBMISSION MONITORING LOGIC ---
+function savePromptToRecent(text, source) {
+    chrome.storage.local.get(['goprompts_recent_cards'], (res) => {
+        let cards = res.goprompts_recent_cards || [];
+        // Remove existing exact duplicates
+        cards = cards.filter(c => (c.content || "").trim() !== text);
+        
+        const newCard = {
+            id: 'recent-' + Date.now(),
+            title: source + " Prompt",
+            content: text,
+            date: new Date().toISOString()
+        };
+        
+        cards.unshift(newCard);
+        
+        // Keep only the most recent 7
+        if (cards.length > 7) {
+            cards = cards.slice(0, 7);
+        }
+        
+        chrome.storage.local.set({ goprompts_recent_cards: cards });
+    });
+}
+
+function monitorAIPromptSubmissions() {
+    const adapter = platformAdapters.find(a => a.match() && a.name !== "Generic Fallback");
+    if (!adapter) return;
+
+    // We use a small timeout to let the UI update if needed, but grab text immediately
+    const handleSubmission = (e, triggerType) => {
+        const editor = adapter.getEditor();
+        if (!editor) return;
+        
+        // Only proceed if the event relates to the chatbox or submission buttons
+        const isFromEditor = (e.target === editor || editor.contains(e.target));
+        const isSendButton = e.target.closest('button[data-testid="send-button"], button[aria-label="Send message"], button[aria-label="Send prompt"], button svg[class*="send"]');
+        
+        if ((triggerType === 'enter' && isFromEditor) || (triggerType === 'click' && isSendButton)) {
+            let text = "";
+            try {
+                if (typeof adapter.getValue === 'function') {
+                    text = adapter.getValue(editor);
+                } else if (editor.tagName === 'TEXTAREA') {
+                    text = editor.value;
+                } else {
+                    text = editor.innerText;
+                }
+            } catch (err) {}
+            
+            text = (text || "").trim();
+            if (text && text.length > 3) { // ignore empty or tiny submissions
+                // Small delay to ensure the framework didn't clear the input immediately BEFORE we could read it 
+                // in corner cases, though usually we catch it before default action
+                savePromptToRecent(text, adapter.name);
+            }
+        }
+    };
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            handleSubmission(e, 'enter');
+        }
+    }, true);
+
+    document.addEventListener('click', (e) => {
+        handleSubmission(e, 'click');
+    }, true);
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', monitorAIPromptSubmissions);
+} else {
+    monitorAIPromptSubmissions();
+}

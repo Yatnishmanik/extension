@@ -1,26 +1,23 @@
-function renderCards(cards, tabId, categoryName = "") {
-    const container = document.getElementById("tabs-container");
+function renderCards(cards, tabId, categoryName = "", targetContainerId = "tabs-container") {
+    const container = document.getElementById(targetContainerId);
+    if (!container) return;
     container.innerHTML = "";
 
     if (!cards) cards = [];
 
     // --- Pill-style Add System (Top) ---
-    const addSystem = document.createElement("div");
-    addSystem.className = "library-add-system";
-    
-    const addNormal = document.createElement("div");
-    addNormal.className = "add-pill";
-    addNormal.innerHTML = `<span>+</span> Normal`;
-    addNormal.onclick = () => showCardModal(cards, tabId, null, categoryName);
-    
-    const addInput = document.createElement("div");
-    addInput.className = "add-pill input-based";
-    addInput.innerHTML = `<span>⚡</span> Input Based`;
-    addInput.onclick = () => showCardModal(cards, tabId, { title: "", content: "{{input}}" }, categoryName);
-
-    addSystem.appendChild(addNormal);
-    addSystem.appendChild(addInput);
-    container.appendChild(addSystem);
+    if (tabId !== 'home' && tabId !== 'ai' && tabId !== 'template' && tabId !== 'template-detail') {
+        const addSystem = document.createElement("div");
+        addSystem.className = "library-add-system";
+        
+        const addNormal = document.createElement("div");
+        addNormal.className = "add-pill";
+        addNormal.innerHTML = `<span>+</span> Add Prompt`;
+        addNormal.onclick = () => showCardModal(cards, tabId, null, categoryName);
+        
+        addSystem.appendChild(addNormal);
+        container.appendChild(addSystem);
+    }
 
     cards.forEach((card, index) => {
         const cardEl = document.createElement("div");
@@ -78,6 +75,7 @@ function renderCards(cards, tabId, categoryName = "") {
         cardEl.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            if (['home', 'promptlab', 'template', 'ai'].includes(tabId)) return;
             showCardContextMenu(e, card, cards, tabId);
         });
 
@@ -145,13 +143,12 @@ function showCardContextMenu(e, card, cards, tabId) {
     menu.querySelector("#menu-delete").onclick = async () => {
         menu.remove();
         window.gpActiveMenu = null;
-        if (confirm(`Delete the prompt "${card.title}"?`)) {
-            const index = cards.indexOf(card);
-            if (index > -1) {
-                cards.splice(index, 1);
-                await saveCards(tabId, { cards });
-                renderCards(cards, tabId, categoryName);
-            }
+        const index = cards.indexOf(card);
+        if (index > -1) {
+            cards.splice(index, 1);
+            await saveCards(tabId, { cards });
+            renderCards(cards, tabId);
+            if (typeof window.showToast === 'function') window.showToast("Prompt successfully deleted");
         }
     };
 
@@ -204,8 +201,10 @@ function showCardModal(cards, tabId, existingCard = null, categoryName = "") {
         if (existingCard) {
             existingCard.title = title || "Untitled Prompt";
             existingCard.content = content;
+            if (typeof window.showToast === 'function') window.showToast("Prompt successfully updated");
         } else {
             cards.push({ title: title || "Untitled Prompt", content });
+            if (typeof window.showToast === 'function') window.showToast("Prompt successfully created");
         }
         
         await saveCards(tabId, { cards });

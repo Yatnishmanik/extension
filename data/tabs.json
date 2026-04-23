@@ -3,24 +3,14 @@
     { "id": "home", "name": "Home", "icon": "Prep" },
     { "id": "promptlab", "name": "Prompt Lab", "icon": "🔬" },
     {
-      "id": "study",
-      "name": "Study",
-      "icon": "📚"
-    },
-    {
-      "id": "debug",
-      "name": "Debug",
-      "icon": "🐞"
-    },
-    {
-      "id": "Coding",
-      "name": "Coding",
-      "icon": "💻"
+      "id": "template",
+      "name": "Template",
+      "icon": "edit"
     },
     {
       "id": "ai",
       "name": "AI",
-      "icon": "🤖"
+      "icon": "cpu"
     },
     {
       "id": "settings",

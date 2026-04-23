@@ -196,6 +196,179 @@ Follow these rules strictly:
         });
 
         return true;
+    } else if (req.type === "OLLAMA_GRAMMAR_REQUEST") {
+        
+        chrome.storage.local.get(['goprompts_ai_provider', 'goprompts_api_key', 'goprompts_ai_model'], (settings) => {
+            const provider = settings.goprompts_ai_provider || 'ollama';
+            const model = settings.goprompts_ai_model || (provider === 'xai' ? 'grok-4-1-fast-non-reasoning' : 'llama3');
+            
+            const systemPrompt = `You are an expert copyeditor. Your ONLY task is to perfectly correct the grammar, spelling, and punctuation of the user's text.
+Follow these rules strictly:
+1. Do NOT change the original meaning or tone.
+2. Do NOT summarize or add any new information.
+3. Do NOT add conversational intros or outros (e.g., "Here is the corrected text:").
+4. OUTPUT ONLY THE CORRECTED TEXT. NO MARKDOWN BLOCKS \`\`\`. Start immediately with the corrected text.`;
+
+            let finalInput = `[USER TEXT]\n${req.draft}`;
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+            if (provider === 'xai') {
+                const apiKey = settings.goprompts_api_key || '';
+                if (!apiKey) {
+                    clearTimeout(timeoutId);
+                    sendResponse({ success: false, error: "Missing API Key." });
+                    return;
+                }
+
+                fetch("https://api.x.ai/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: finalInput }
+                        ],
+                        stream: false
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    clearTimeout(timeoutId);
+                    if (data.choices && data.choices.length > 0) {
+                        sendResponse({ success: true, output: data.choices[0].message.content });
+                    } else {
+                        sendResponse({ success: false, error: "Empty response." });
+                    }
+                }).catch(err => {
+                    clearTimeout(timeoutId);
+                    sendResponse({ success: false, error: err.name === 'AbortError' ? "Timeout" : err.message });
+                });
+
+            } else {
+                fetch("http://localhost:11434/api/generate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        model: model,
+                        system: systemPrompt,
+                        prompt: finalInput,
+                        stream: false
+                    })
+                })
+                .then(async res => {
+                    clearTimeout(timeoutId);
+                    if (!res.ok) {
+                        const text = await res.text();
+                        throw new Error(`Server Error ${res.status}: ${text || res.statusText}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.response) {
+                        sendResponse({ success: true, output: data.response });
+                    } else {
+                        sendResponse({ success: false, error: "Empty response." });
+                    }
+                }).catch(err => {
+                    clearTimeout(timeoutId);
+                    sendResponse({ success: false, error: err.name === 'AbortError' ? "Timeout" : "Connection Issue: " + err.message });
+                });
+            }
+        });
+
+        return true;
+    } else if (req.type === "OLLAMA_HOME_ENHANCE_REQUEST") {
+        
+        chrome.storage.local.get(['goprompts_ai_provider', 'goprompts_api_key', 'goprompts_ai_model'], (settings) => {
+            const provider = settings.goprompts_ai_provider || 'ollama';
+            const model = settings.goprompts_ai_model || (provider === 'xai' ? 'grok-4-1-fast-non-reasoning' : 'llama3');
+            
+            const systemPrompt = `You are an expert prompt engineer. Your task is to enhance the user's prompt to make it clear, highly effective, and professional.
+Follow these rules strictly:
+1. Enhance the prompt in a normal, straightforward way. Do NOT overcomplicate.
+2. The enhanced prompt MUST BE STRICTLY LESS THAN 100 WORDS.
+3. Keep the user's original intent intact.
+4. Do NOT add conversational intros, outros, or explanations (e.g., "Here is the enhanced prompt:").
+5. OUTPUT ONLY THE ENHANCED PROMPT TEXT. NO MARKDOWN BLOCKS \`\`\`. Start immediately with the enhanced prompt.`;
+
+            let finalInput = `[USER DRAFT]\n${req.draft}`;
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+            if (provider === 'xai') {
+                const apiKey = settings.goprompts_api_key || '';
+                if (!apiKey) {
+                    clearTimeout(timeoutId);
+                    sendResponse({ success: false, error: "Missing API Key." });
+                    return;
+                }
+
+                fetch("https://api.x.ai/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: finalInput }
+                        ],
+                        stream: false
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    clearTimeout(timeoutId);
+                    if (data.choices && data.choices.length > 0) {
+                        sendResponse({ success: true, output: data.choices[0].message.content });
+                    } else {
+                        sendResponse({ success: false, error: "Empty response." });
+                    }
+                }).catch(err => {
+                    clearTimeout(timeoutId);
+                    sendResponse({ success: false, error: err.name === 'AbortError' ? "Timeout" : err.message });
+                });
+
+            } else {
+                fetch("http://localhost:11434/api/generate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        model: model,
+                        system: systemPrompt,
+                        prompt: finalInput,
+                        stream: false
+                    })
+                })
+                .then(async res => {
+                    clearTimeout(timeoutId);
+                    if (!res.ok) {
+                        const text = await res.text();
+                        throw new Error(`Server Error ${res.status}: ${text || res.statusText}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.response) {
+                        sendResponse({ success: true, output: data.response });
+                    } else {
+                        sendResponse({ success: false, error: "Empty response." });
+                    }
+                }).catch(err => {
+                    clearTimeout(timeoutId);
+                    sendResponse({ success: false, error: err.name === 'AbortError' ? "Timeout" : "Connection Issue: " + err.message });
+                });
+            }
+        });
+
+        return true;
     } else if (req.type === "PING_PROVIDER") {
         chrome.storage.local.get(['goprompts_ai_provider', 'goprompts_api_key', 'goprompts_ai_model'], (settings) => {
             const provider = settings.goprompts_ai_provider || 'ollama';

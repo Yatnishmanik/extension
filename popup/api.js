@@ -57,6 +57,24 @@ async function loadTabs() {
 
 async function loadCards(tabId) {
     return new Promise(resolve => {
+        if (tabId === 'home') {
+            chrome.storage.local.get(['goprompts_recent_cards'], async (result) => {
+                if (result.goprompts_recent_cards && result.goprompts_recent_cards.length > 0) {
+                    resolve({ cards: result.goprompts_recent_cards });
+                } else {
+                    try {
+                        const url = chrome.runtime.getURL(`data/home.json`);
+                        const data = await fetch(url).then(res => res.json());
+                        chrome.storage.local.set({ 'goprompts_recent_cards': data.cards });
+                        resolve(data);
+                    } catch (e) {
+                         resolve({ cards: [] });
+                    }
+                }
+            });
+            return;
+        }
+
         const key = `goprompts_cards_${tabId}`;
         chrome.storage.local.get([key], async (result) => {
             // ARCHITECTURE HOTFIX: If the AI cards are missing or empty, force a re-fetch of our new default ai.json!
@@ -78,6 +96,12 @@ async function loadCards(tabId) {
 }
 
 function saveCards(tabId, data) {
+    if (tabId === 'home') {
+        return new Promise(resolve => {
+            chrome.storage.local.set({ 'goprompts_recent_cards': data.cards }, () => resolve());
+        });
+    }
+
     const key = `goprompts_cards_${tabId}`;
     return new Promise(resolve => {
         chrome.storage.local.set({ [key]: data }, () => {

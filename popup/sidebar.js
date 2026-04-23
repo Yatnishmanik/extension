@@ -80,6 +80,7 @@ function renderSidebar(tabsData, onTabClick) {
         tabEl.addEventListener("contextmenu", (e) => {
             e.preventDefault();
             e.stopPropagation();
+            if (['home', 'promptlab', 'template', 'ai'].includes(tab.id)) return;
             showContextMenu(e, tab, tabsData, onTabClick);
         });
 
@@ -153,6 +154,26 @@ function renderSidebar(tabsData, onTabClick) {
         onTabClick('settings', settingsTab.name);
     });
     if (footerArea) footerArea.appendChild(settingsEl);
+
+    // 4. Render Profile statically (below settings)
+    const profileEl = document.createElement("div");
+    profileEl.classList.add("side-tab");
+    const userSvg = svgMap['user'];
+    profileEl.innerHTML = `
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${userSvg}</svg></span>
+        <div class="tab-label">Profile</div>
+    `;
+    profileEl.addEventListener("click", () => {
+        document.querySelectorAll(".side-tab").forEach(t => t.classList.remove("active"));
+        profileEl.classList.add('active');
+        chrome.storage.local.remove(['promptimity_is_logged_in'], () => {
+            if (typeof showAuthView === 'function') {
+                showAuthView();
+            }
+            if (typeof window.showToast === 'function') window.showToast("Successfully logged out");
+        });
+    });
+    if (footerArea) footerArea.appendChild(profileEl);
 }
 
 function showContextMenu(e, tab, tabsData, onTabClick) {
@@ -188,11 +209,10 @@ function showContextMenu(e, tab, tabsData, onTabClick) {
         menu.querySelector("#menu-delete").onclick = async () => {
             menu.remove();
             window.gpActiveMenu = null;
-            if (confirm(`Delete the tab "${tab.name}"?`)) {
-                tabsData.tabs = tabsData.tabs.filter(t => t.id !== tab.id);
-                await chrome.storage.local.set({ 'goprompts_tabs': tabsData });
-                renderSidebar(tabsData, onTabClick);
-            }
+            tabsData.tabs = tabsData.tabs.filter(t => t.id !== tab.id);
+            await chrome.storage.local.set({ 'goprompts_tabs': tabsData });
+            renderSidebar(tabsData, onTabClick);
+            if (typeof window.showToast === 'function') window.showToast("Tab deleted");
         };
     }
 
@@ -265,6 +285,7 @@ function showAddTabModal(tabsData, onTabClick, existingTab = null) {
             existingTab.name = name;
             existingTab.description = desc;
             existingTab.icon = selectedIcon;
+            if (typeof window.showToast === 'function') window.showToast("Tab updated");
         } else {
             // Add new
             const newId = name.toLowerCase().replace(/[^a-z0-0]/g, '_') + '_' + Date.now();
@@ -274,6 +295,7 @@ function showAddTabModal(tabsData, onTabClick, existingTab = null) {
                 icon: selectedIcon,
                 description: desc 
             });
+            if (typeof window.showToast === 'function') window.showToast("Tab created");
         }
         
         await chrome.storage.local.set({ 'goprompts_tabs': tabsData });

@@ -11,6 +11,9 @@ function renderSettingsUI() {
             .apple-switch input:checked ~ .apple-slider-knob { transform: translateX(14px); }
         </style>
         <div class="settings-container">
+            <h3 style="margin-top: 0; margin-bottom: 24px; font-weight: 600; font-size: 16.5px; letter-spacing: -0.3px; text-align: center;">History</h3>
+            <button id="clear-recent-btn" style="width: 100%; padding: 12px; margin-bottom: 30px; cursor: pointer; border-radius: 8px; border: 1px solid rgba(255, 59, 48, 0.4); background: rgba(255, 59, 48, 0.1); color: #ff3b30; font-weight: 600; font-size: 14.5px; transition: all 0.2s ease;">Clear Recent Prompts</button>
+
             <h3 style="margin-top: 0; margin-bottom: 24px; font-weight: 600; font-size: 16.5px; letter-spacing: -0.3px; text-align: center;">Appearance</h3>
             
             <div class="settings-group" style="display: flex; align-items: center; justify-content: space-between; background: rgba(128,128,128,0.06); padding: 12px 16px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border-color);">
@@ -43,6 +46,17 @@ function renderSettingsUI() {
             localStorage.setItem('goprompts-theme', 'light');
         }
     });
+
+    const clearRecentBtn = container.querySelector('#clear-recent-btn');
+    if (clearRecentBtn) {
+        clearRecentBtn.addEventListener('click', () => {
+            chrome.storage.local.set({ goprompts_recent_cards: [] }, () => {
+                if (typeof window.showToast === 'function') {
+                    window.showToast("Cleared recent prompts");
+                }
+            });
+        });
+    }
 
     // 2. Async Load AI Target Configs
     chrome.storage.local.get(['goprompts_ai_provider', 'goprompts_api_key', 'goprompts_ai_model'], (settings) => {
