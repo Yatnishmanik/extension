@@ -34,6 +34,7 @@
     "https://claude.ai/*",
     "https://api.x.ai/*",
     "http://localhost:11434/*",
+    "http://localhost:5000/*",
     "<all_urls>"
   ],
   "background": {

@@ -1,6 +1,7 @@
 function renderCards(cards, tabId, categoryName = "", targetContainerId = "tabs-container") {
     const container = document.getElementById(targetContainerId);
     if (!container) return;
+    container.style.overflow = ""; // Restore scroll when leaving home view
     container.innerHTML = "";
 
     if (!cards) cards = [];
@@ -23,6 +24,7 @@ function renderCards(cards, tabId, categoryName = "", targetContainerId = "tabs-
         const cardEl = document.createElement("div");
         cardEl.className = "card";
         cardEl.setAttribute("draggable", "true");
+        cardEl.setAttribute("data-tab", tabId);
 
         const displayTitle = card.title || "Untitled Prompt";
         const hasTemplateBadge = (card.content && card.content.includes("{{input}}")) 
@@ -79,7 +81,9 @@ function renderCards(cards, tabId, categoryName = "", targetContainerId = "tabs-
             showCardContextMenu(e, card, cards, tabId);
         });
 
-        cardEl.addEventListener('click', () => handleUse(cardEl));
+        cardEl.addEventListener('click', (e) => {
+            if (typeof handleUse === 'function') handleUse(cardEl);
+        });
 
         // Drag and Drop
         cardEl.addEventListener("dragstart", (e) => {
@@ -145,6 +149,18 @@ function showCardContextMenu(e, card, cards, tabId) {
         window.gpActiveMenu = null;
         const index = cards.indexOf(card);
         if (index > -1) {
+            try {
+                const { promptimity_token } = await chrome.storage.local.get(['promptimity_token']);
+                if (promptimity_token && card.id) {
+                    await fetch(`http://localhost:5000/api/prompts/${card.id}`, {
+                        method: "DELETE",
+                        headers: { "x-auth-token": promptimity_token }
+                    });
+                }
+            } catch(e) {
+                console.error("API Error deleting prompt:", e);
+            }
+
             cards.splice(index, 1);
             await saveCards(tabId, { cards });
             renderCards(cards, tabId);
@@ -194,17 +210,62 @@ function showCardModal(cards, tabId, existingCard = null, categoryName = "") {
     overlay.querySelector("#modal-cancel").onclick = () => overlay.remove();
     
     overlay.querySelector("#modal-save").onclick = async () => {
-        const title = overlay.querySelector("#modal-card-title").value.trim();
+        const title = overlay.querySelector("#modal-card-title").value.trim() || "Untitled Prompt";
         const content = overlay.querySelector("#modal-card-content").value.trim();
         if (!content) return alert("Prompt content cannot be empty.");
 
-        if (existingCard) {
-            existingCard.title = title || "Untitled Prompt";
-            existingCard.content = content;
-            if (typeof window.showToast === 'function') window.showToast("Prompt successfully updated");
-        } else {
-            cards.push({ title: title || "Untitled Prompt", content });
-            if (typeof window.showToast === 'function') window.showToast("Prompt successfully created");
+        try {
+            const { promptimity_token } = await chrome.storage.local.get(['promptimity_token']);
+            if (existingCard) {
+                if (promptimity_token && existingCard.id) {
+                    await fetch(`http://localhost:5000/api/prompts/${existingCard.id}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "x-auth-token": promptimity_token
+                        },
+                        body: JSON.stringify({ title, content, tabId })
+                    });
+                }
+                existingCard.title = title;
+                existingCard.content = content;
+                if (typeof window.showToast === 'function') window.showToast("Prompt successfully updated");
+            } else {
+                if (!promptimity_token) {
+                    if (typeof window.showToast === 'function') window.showToast("Please log in to create a prompt");
+                    return;
+                }
+
+                const res = await fetch("http://localhost:5000/api/prompts", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-auth-token": promptimity_token
+                    },
+                    body: JSON.stringify({ title, content, tabId })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({}));
+                    const errorMsg = errorData.msg || errorData.message || "Failed to create prompt";
+                    if (typeof window.showToast === 'function') window.showToast(errorMsg);
+                    return;
+                }
+
+                const data = await res.json();
+                cards.push({ id: data._id, title, content });
+                if (typeof window.showToast === 'function') window.showToast("Prompt successfully created");
+            }
+        } catch(e) {
+            console.error("API Error with prompt:", e);
+            if (existingCard) {
+                existingCard.title = title;
+                existingCard.content = content;
+                if (typeof window.showToast === 'function') window.showToast("Prompt updated locally (API Error)");
+            } else {
+                if (typeof window.showToast === 'function') window.showToast("Could not connect to server");
+                return;
+            }
         }
         
         await saveCards(tabId, { cards });

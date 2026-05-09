@@ -149,17 +149,23 @@ Follow these rules strictly:
                         stream: false
                     })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    clearTimeout(timeoutId);
-                    if (data.choices && data.choices.length > 0) {
-                        sendResponse({ success: true, output: data.choices[0].message.content });
+                .then(async res => {
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        clearTimeout(timeoutId);
+                        if (data.choices && data.choices.length > 0) {
+                            sendResponse({ success: true, output: data.choices[0].message.content });
+                        } else {
+                            sendResponse({ success: false, error: "Cloud API: Empty response." });
+                        }
                     } else {
-                        sendResponse({ success: false, error: "Empty response." });
+                        clearTimeout(timeoutId);
+                        const errorMsg = data?.error?.message || data?.message || `Server Error ${res.status}`;
+                        sendResponse({ success: false, error: errorMsg });
                     }
                 }).catch(err => {
                     clearTimeout(timeoutId);
-                    sendResponse({ success: false, error: err.name === 'AbortError' ? "Timeout" : err.message });
+                    sendResponse({ success: false, error: err.name === 'AbortError' ? "Request Timeout" : "Network Error: " + err.message });
                 });
 
             } else {
@@ -235,17 +241,23 @@ Follow these rules strictly:
                         stream: false
                     })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    clearTimeout(timeoutId);
-                    if (data.choices && data.choices.length > 0) {
-                        sendResponse({ success: true, output: data.choices[0].message.content });
+                .then(async res => {
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        clearTimeout(timeoutId);
+                        if (data.choices && data.choices.length > 0) {
+                            sendResponse({ success: true, output: data.choices[0].message.content });
+                        } else {
+                            sendResponse({ success: false, error: "Cloud API: Empty response." });
+                        }
                     } else {
-                        sendResponse({ success: false, error: "Empty response." });
+                        clearTimeout(timeoutId);
+                        const errorMsg = data?.error?.message || data?.message || `Server Error ${res.status}`;
+                        sendResponse({ success: false, error: errorMsg });
                     }
                 }).catch(err => {
                     clearTimeout(timeoutId);
-                    sendResponse({ success: false, error: err.name === 'AbortError' ? "Timeout" : err.message });
+                    sendResponse({ success: false, error: err.name === 'AbortError' ? "Request Timeout" : "Network Error: " + err.message });
                 });
 
             } else {
@@ -322,17 +334,23 @@ Follow these rules strictly:
                         stream: false
                     })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    clearTimeout(timeoutId);
-                    if (data.choices && data.choices.length > 0) {
-                        sendResponse({ success: true, output: data.choices[0].message.content });
+                .then(async res => {
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        clearTimeout(timeoutId);
+                        if (data.choices && data.choices.length > 0) {
+                            sendResponse({ success: true, output: data.choices[0].message.content });
+                        } else {
+                            sendResponse({ success: false, error: "Cloud API: Empty response." });
+                        }
                     } else {
-                        sendResponse({ success: false, error: "Empty response." });
+                        clearTimeout(timeoutId);
+                        const errorMsg = data?.error?.message || data?.message || `Server Error ${res.status}`;
+                        sendResponse({ success: false, error: errorMsg });
                     }
                 }).catch(err => {
                     clearTimeout(timeoutId);
-                    sendResponse({ success: false, error: err.name === 'AbortError' ? "Timeout" : err.message });
+                    sendResponse({ success: false, error: err.name === 'AbortError' ? "Request Timeout" : "Network Error: " + err.message });
                 });
 
             } else {
@@ -370,7 +388,7 @@ Follow these rules strictly:
 
         return true;
     } else if (req.type === "PING_PROVIDER") {
-        chrome.storage.local.get(['goprompts_ai_provider', 'goprompts_api_key', 'goprompts_ai_model'], (settings) => {
+        const checkSettings = (settings) => {
             const provider = settings.goprompts_ai_provider || 'ollama';
             const model = settings.goprompts_ai_model || 'llama3';
             const apiKey = settings.goprompts_api_key || '';
@@ -393,12 +411,20 @@ Follow these rules strictly:
                     if (res.ok) sendResponse({ success: true, message: "xAI API Online" });
                     else {
                         const errData = await res.json().catch(() => ({}));
-                        sendResponse({ success: false, error: errData.error?.message || "Invalid API Key" });
+                        sendResponse({ success: false, error: errData.error?.message || "Invalid API Key or Model" });
                     }
                 })
                 .catch(() => sendResponse({ success: false, error: "xAI Unreachable" }));
             }
-        });
+        };
+
+        if (req.settings) {
+            checkSettings(req.settings);
+        } else {
+            chrome.storage.local.get(['goprompts_ai_provider', 'goprompts_api_key', 'goprompts_ai_model'], (settings) => {
+                checkSettings(settings);
+            });
+        }
         return true;
     }
 

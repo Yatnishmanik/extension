@@ -1,0 +1,44 @@
+Promptimity API Endpoints Reference
+
+======================
+AUTHENTICATION
+======================
+GET    /api/auth/check-username           - Check if a username exists
+POST   /api/auth/signup                   - Register a new user
+POST   /api/auth/login                    - Authenticate user and get token
+GET    /api/auth/me                       - Get logged in user details
+PUT    /api/auth/profile                  - Update user profile information
+DELETE /api/auth/me                       - Delete user account and all associated data
+POST   /api/auth/google                   - Authenticate user via Google login
+POST   /api/auth/forgot-password          - Send password reset email
+POST   /api/auth/reset-password/:token    - Reset password using token
+
+======================
+TABS
+======================
+GET    /api/tabs                          - Get all saved tabs for the user
+POST   /api/tabs                          - Create a new tab
+PUT    /api/tabs/:id                      - Update an existing tab
+DELETE /api/tabs/:id                      - Delete a specific tab
+
+======================
+PROMPTS
+======================
+GET    /api/prompts                       - Get all saved prompts for the user
+POST   /api/prompts                       - Create a new prompt
+PUT    /api/prompts/:id                   - Update an existing prompt
+DELETE /api/prompts/:id                   - Delete a specific prompt
+
+======================
+HISTORY
+======================
+GET    /api/history                       - Get user activity history
+POST   /api/history                       - Add a new action log to history
+DELETE /api/history                       - Clear all user activity history
+DELETE /api/history/:id                   - Delete a specific history log entry
+
+======================
+SETTINGS
+======================
+GET    /api/settings                      - Get user settings (Target Model ID, API Key)
+POST   /api/settings                      - Create or update user settings

@@ -1,20 +1,50 @@
 {
-  "cards": [
-    {
-      "title": "Professional Rewrite",
-      "content": "Rewrite the following text to be professional, polite, and grammatically perfect for a corporate environment: \n\n{{ai}}"
-    },
-    {
-      "title": "Smart Summarizer",
-      "content": "Analyze the following content and provide a bulleted summary of the 3 most important takeaways: \n\n{{ai}}"
-    },
-    {
-      "title": "Code Explainer",
-      "content": "Act as a senior software engineer. Explain what this code does and suggest 2 specific improvements for readability: \n\n```\n{{ai}}\n```"
-    },
-    {
-      "title": "Tone Shifter (Friendly)",
-      "content": "Rewrite this to sound much more friendly, warm, and encouraging: \n\n{{ai}}"
-    }
-  ]
+  "OpenAI": {
+    "install": "npm install -g openai",
+    "description": "Powerful cloud-based AI models like GPT for chat, coding, and automation."
+  },
+  "Google (Gemini)": {
+    "install": "npm install -g @google/generative-ai",
+    "description": "Google's multimodal AI capable of text, code, and image reasoning."
+  },
+  "Anthropic": {
+    "install": "npm install -g @anthropic-ai/cli",
+    "description": "Claude AI focused on safety, long-context reasoning, and structured outputs."
+  },
+  "Perplexity AI": {
+    "install": "npm install -g pplx-cli",
+    "description": "AI search engine with real-time web access and concise answers."
+  },
+  "Groq": {
+    "install": "pip install groq",
+    "description": "Ultra-fast inference platform optimized for low-latency AI responses."
+  },
+  "Ollama": {
+    "install": "curl -fsSL https://ollama.com/install.sh | sh",
+    "description": "Run local LLMs like LLaMA and Mistral directly on your machine."
+  },
+  "Hugging Face": {
+    "install": "pip install huggingface_hub",
+    "description": "Open ecosystem for hosting, sharing, and running thousands of AI models."
+  },
+  "Mistral AI": {
+    "install": "pip install mistralai",
+    "description": "High-performance open-weight models with strong reasoning and efficiency."
+  },
+  "Cohere": {
+    "install": "pip install cohere",
+    "description": "Enterprise-focused NLP models for embeddings, search, and text generation."
+  },
+  "Together AI": {
+    "install": "pip install together",
+    "description": "Access to multiple open-source models via a unified API platform."
+  },
+  "Replicate": {
+    "install": "pip install replicate",
+    "description": "Run and deploy machine learning models from the cloud easily."
+  },
+  "AI21 Labs": {
+    "install": "pip install ai21",
+    "description": "Jurassic models focused on natural language understanding and generation."
+  }
 }

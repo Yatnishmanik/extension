@@ -172,8 +172,8 @@ function renderLoginUI() {
 
             <div class="auth-form">
                 <div class="auth-input-group">
-                    <span class="auth-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></span>
-                    <input type="email" placeholder="Email address" class="auth-input" id="auth-email">
+                    <span class="auth-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+                    <input type="text" placeholder="Username" class="auth-input" id="auth-username">
                 </div>
                 
                 <div class="auth-input-group">
@@ -183,30 +183,21 @@ function renderLoginUI() {
                 </div>
 
                 <div class="auth-links">
-                    <a href="#" class="auth-link">Forgot password?</a>
+                    <a href="http://localhost:3000/forgot-password" target="_blank" class="auth-link">Forgot password?</a>
                 </div>
 
                 <button class="auth-btn auth-primary-btn" id="login-submit-btn">Continue</button>
 
-                <div class="auth-separator">
-                    <span>OR</span>
-                </div>
-
-                <button class="auth-btn auth-social-btn">
-                    <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/><path d="M1 1h22v22H1z" fill="none"/></svg>
-                    Continue with Google
-                </button>
-
-
-                <div class="auth-switch">
-                    Don't have an account? <span class="auth-link pointer" id="go-to-signup">Sign up</span>
+                <div class="auth-switch" style="font-size: 12px; margin-top: 20px;">
+                    If you do not have an account
+                    <button id="go-to-signup" class="auth-btn auth-social-btn" style="margin-top: 10px; padding: 8px;">Create account</button>
                 </div>
             </div>
         </div>
     `;
 
     document.getElementById("go-to-signup").addEventListener("click", () => {
-        renderSignupUI();
+        window.open("http://localhost:3000/signup", "_blank");
     });
 
     document.getElementById("login-submit-btn").addEventListener("click", mockLogin);
@@ -266,12 +257,50 @@ function renderSignupUI() {
 }
 
 async function mockLogin() {
-    await chrome.storage.local.set({ 'promptimity_is_logged_in': true });
-    // Reload UI
-    showAppView();
-    // In case popup.js needs to init tabs
-    if (typeof window.initPromptimityTabs === 'function') {
-        window.initPromptimityTabs();
+    const usernameInput = document.getElementById("auth-username");
+    const passwordInput = document.getElementById("auth-password");
+    
+    const username = usernameInput ? usernameInput.value : '';
+    const password = passwordInput ? passwordInput.value : '';
+
+    if (!username || !password) {
+        if (typeof window.showToast === 'function') window.showToast("Please enter username and password");
+        return;
     }
-    if (typeof window.showToast === 'function') window.showToast("Successfully logged in");
+
+    try {
+        const response = await fetch("http://localhost:5000/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            await chrome.storage.local.set({ 
+                'promptimity_is_logged_in': true,
+                'promptimity_token': data.token,
+                'promptimity_user': data.user
+            });
+            // Reload UI
+            showAppView();
+            // Fetch user settings from API
+            if (typeof loadUserSettings === 'function') {
+                await loadUserSettings();
+            }
+            // In case popup.js needs to init tabs
+            if (typeof window.initPromptimityTabs === 'function') {
+                window.initPromptimityTabs(true);
+            }
+            if (typeof window.showToast === 'function') window.showToast("Successfully logged in");
+        } else {
+            if (typeof window.showToast === 'function') window.showToast(data.msg || "Login failed");
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+        if (typeof window.showToast === 'function') window.showToast("Error connecting to server");
+    }
 }

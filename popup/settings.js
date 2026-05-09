@@ -133,32 +133,72 @@ function renderSettingsUI() {
             keyContainer.style.display = e.target.value === 'ollama' ? 'none' : 'block';
         });
 
-        dynamicRoot.querySelector('#save-settings-btn').addEventListener('click', (e) => {
+        dynamicRoot.querySelector('#save-settings-btn').addEventListener('click', async (e) => {
             const btn = e.target;
-            btn.innerText = 'Locking Data...';
+            const originalText = btn.innerText;
+            const originalBg = btn.style.background;
+            
+            btn.innerText = 'Validating Pipeline...';
+            btn.disabled = true;
             btn.style.opacity = '0.7';
             
             const newProvider = providerSelect.value;
             const newKey = dynamicRoot.querySelector('#setting-key').value.trim();
             const newModel = dynamicRoot.querySelector('#setting-model').value.trim() || (newProvider === 'xai' ? 'grok-2' : 'llama3');
 
-            chrome.storage.local.set({
+            const settingsToValidate = {
                 goprompts_ai_provider: newProvider,
                 goprompts_api_key: newKey,
                 goprompts_ai_model: newModel
-            }, () => {
-                // Re-check status after save
-                checkAIStatus();
-                
-                setTimeout(() => {
-                    btn.innerText = 'Routing Synced!';
-                    btn.style.background = '#32d74b';
+            };
+
+            // 1. Verify Connection
+            chrome.runtime.sendMessage({ type: "PING_PROVIDER", settings: settingsToValidate }, async (response) => {
+                if (response && response.success) {
+                    btn.innerText = 'Syncing Cloud...';
+                    
+                    // 2. Save to Local Storage
+                    chrome.storage.local.set(settingsToValidate, async () => {
+                        // 3. Save to Backend API
+                        let backendSynced = false;
+                        if (typeof saveUserSettings === 'function') {
+                            backendSynced = await saveUserSettings(settingsToValidate);
+                        }
+
+                        // Re-check status UI
+                        if (typeof checkAIStatus === 'function') checkAIStatus();
+                        
+                        btn.innerText = backendSynced ? 'Routing Synced!' : 'Local Saved (Sync Error)';
+                        btn.style.background = '#32d74b';
+                        btn.style.opacity = '1';
+                        
+                        if (typeof window.showToast === 'function') {
+                            window.showToast(backendSynced ? "Settings verified and saved to cloud" : "Settings verified but backend sync failed");
+                        }
+
+                        setTimeout(() => {
+                            btn.innerText = originalText;
+                            btn.style.background = originalBg;
+                            btn.disabled = false;
+                        }, 2200);
+                    });
+                } else {
+                    // Validation Failed
+                    btn.innerText = 'Validation Failed';
+                    btn.style.background = '#ff453a';
                     btn.style.opacity = '1';
+                    btn.disabled = false;
+                    
+                    const errorMsg = response?.error || "Could not connect to AI provider";
+                    if (typeof window.showToast === 'function') {
+                        window.showToast("Validation Error: " + errorMsg);
+                    }
+
                     setTimeout(() => {
-                        btn.innerText = 'Save Configuration';
-                        btn.style.background = '#0a84ff';
-                    }, 2200);
-                }, 300);
+                        btn.innerText = originalText;
+                        btn.style.background = originalBg;
+                    }, 3000);
+                }
             });
         });
     });

@@ -1,14 +1,15 @@
 function renderHomeUI() {
     const container = document.getElementById("tabs-container");
+    container.style.overflow = "hidden"; // Prevent parent scroll — inner flex handles it
     container.innerHTML = `
         <style>
             .home-container {
                 display: flex;
                 flex-direction: column;
-                height: 100vh;
-                max-height: 100vh;
+                height: 100%;
+                max-height: 100%;
                 overflow: hidden;
-                padding: 20px 0;
+                padding: 12px 0;
                 box-sizing: border-box;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             }
@@ -36,28 +37,22 @@ function renderHomeUI() {
                 letter-spacing: -0.2px;
             }
             #grammar-btn { 
-                background: #0A84FF; 
-                color: white; 
-                box-shadow: 0 4px 16px rgba(10, 132, 255, 0.25); 
-                margin-bottom: 24px;
+                background: transparent; 
+                color: #34C759; 
+                border: 1px solid #34C759;
+                box-shadow: 0 0 12px rgba(52, 199, 89, 0.15); 
+                margin-bottom: 16px;
             }
-            #grammar-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(10, 132, 255, 0.35); background: #0070E0; }
+            #grammar-btn:hover { transform: translateY(-2px); box-shadow: 0 0 24px rgba(52, 199, 89, 0.3); background: rgba(52, 199, 89, 0.08); }
             
             #enhance-btn { 
-                background: #8A5AEC; 
-                color: white; 
-                box-shadow: 0 4px 16px rgba(138, 90, 236, 0.25); 
-                margin-bottom: 24px;
+                background: transparent; 
+                color: #3B82F6; 
+                border: 1px solid #3B82F6;
+                box-shadow: 0 0 12px rgba(59, 130, 246, 0.15); 
+                margin-bottom: 16px;
             }
-            #enhance-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(138, 90, 236, 0.35); background: #7C45E8; }
-            
-            #score-btn { 
-                background: #111111; 
-                color: #34C759; 
-                border: 1px solid rgba(52, 199, 89, 0.4); 
-                box-shadow: 0 4px 16px rgba(52, 199, 89, 0.1);
-            }
-            #score-btn:hover { background: #1a1a1a; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(52, 199, 89, 0.2); }
+            #enhance-btn:hover { transform: translateY(-2px); box-shadow: 0 0 24px rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.08); }
 
             .action-btn svg { opacity: 0.9; }
 
@@ -65,7 +60,7 @@ function renderHomeUI() {
                 background: rgba(255,255,255,0.03) !important;
                 border: 1px solid var(--border-light) !important;
                 border-radius: 16px;
-                padding: 20px;
+                padding: 12px 16px;
                 box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
                 margin-bottom: 24px;
                 display: flex;
@@ -85,7 +80,16 @@ function renderHomeUI() {
             }
 
             .score-display-wrapper {
-                display: flex; align-items: center; gap: 18px; z-index: 1; position: relative;
+                display: flex; align-items: center; gap: 16px; z-index: 1; position: relative;
+            }
+            .score-divider {
+                width: 1px;
+                height: 40px;
+                background: rgba(0,0,0,0.12);
+                flex-shrink: 0;
+            }
+            #prompt-box.dark-mode .score-divider {
+                background: rgba(255,255,255,0.08);
             }
             
             .gauge-wrapper {
@@ -94,7 +98,7 @@ function renderHomeUI() {
             .gauge-text {
                 position: absolute; top: 0; left: 0; width: 100%; height: 100%;
                 display: flex; align-items: center; justify-content: center;
-                font-weight: 800; font-size: 17px; color: var(--text-color); opacity: 0.7;
+                font-weight: 800; font-size: 19px; color: var(--text-color); opacity: 0.9;
                 transition: color 0.5s;
             }
             .score-card-theme #score-label { color: var(--text-color) !important; }
@@ -132,8 +136,8 @@ function renderHomeUI() {
             .recent-list { display: flex; flex-direction: column; gap: 12px; padding: 0; }
             .recent-item {
                 padding: 12px 16px; 
-                background: var(--card-dark, #222); 
-                border: 1px solid var(--border-dark, #3a3a3a); 
+                background: var(--card-light, #fff); 
+                border: 1px solid var(--border-light, #e0e0e0); 
                 border-radius: 12px;
                 cursor: pointer; 
                 transition: transform 0.2s, box-shadow 0.2s; 
@@ -143,8 +147,12 @@ function renderHomeUI() {
                 width: 100%;
                 box-sizing: border-box;
             }
-            .recent-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-            .recent-title { font-size: 15px; font-weight: 700; color: var(--text-color); }
+            #prompt-box.dark-mode .recent-item {
+                background: var(--card-dark, #222);
+                border-color: var(--border-dark, #3a3a3a);
+            }
+            .recent-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+            .recent-title { font-size: 15px; font-weight: 700; color: var(--text-color); display: flex; align-items: center; gap: 6px; }
             .recent-badge {
                 display: inline-flex;
                 align-items: center;
@@ -209,20 +217,22 @@ function renderHomeUI() {
                         transform: translateY(0);
                     }
                 </style>
-                <div class="score-card-theme" style="margin-bottom: 12px; padding: 20px;">
+                <div class="score-card-theme" style="margin-bottom: 8px; padding: 12px 16px;">
                     <div class="score-display-wrapper" style="margin-top: 0;">
-                    <div class="gauge-wrapper">
-                        <svg width="64" height="64" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"></circle>
-                            <circle id="gauge-fill" cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10" stroke-dasharray="276.46" stroke-dashoffset="276.46" stroke-linecap="round" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), stroke 0.5s;"></circle>
-                        </svg>
-                        <div id="score-circle" class="gauge-text">0</div>
-                    </div>
-                    <div style="flex: 1; display: flex; align-items: center;">
-                        <div id="score-label" style="font-size: 16px; font-weight: 600;">Prompt Score</div>
+                        <div class="gauge-wrapper">
+                            <svg width="64" height="64" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(128,128,128,0.3)" stroke-width="10"></circle>
+                                <circle id="gauge-fill" cx="50" cy="50" r="44" fill="none" stroke="rgba(128,128,128,0.2)" stroke-width="10" stroke-dasharray="276.46" stroke-dashoffset="276.46" stroke-linecap="round" transform="rotate(-90 50 50)" style="transition: stroke-dashoffset 1.5s cubic-bezier(0.2, 0.8, 0.2, 1), stroke 0.5s;"></circle>
+                            </svg>
+                            <div id="score-circle" class="gauge-text">0</div>
+                        </div>
+                        <div class="score-divider"></div>
+                        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                            <div id="score-label" style="font-size: 16px; font-weight: 600;">Prompt Score</div>
+                            <div style="font-size: 11px; opacity: 0.4; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px;">Quality & Precision</div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
             <div class="score-card-theme eval-params-card" style="padding: 16px 20px;">
                 <details class="score-accordion" open>
@@ -263,7 +273,7 @@ function renderHomeUI() {
                 <span>Enhance Prompt</span>
             </button>
 
-                <h3 class="recent-section-title" style="margin-top: 24px;">
+                <h3 class="recent-section-title" style="margin-top: 16px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     Recent Prompts
                 </h3>
@@ -329,12 +339,48 @@ function renderHomeUI() {
         }
 
         if (distinct.length > 0) {
-            recentList.innerHTML = distinct.map(card => `
-                <div class="recent-item" data-text="${encodeURIComponent(card.content)}">
-                    <span class="recent-title">${card.title || 'Untitled Prompt'}</span>
-                    <span class="recent-preview">${card.content}</span>
-                </div>
-            `).join('');
+            recentList.innerHTML = distinct.map(card => {
+                const title = (card.title || "").toLowerCase();
+                const isGemini = title.includes("gemini");
+                const isChatGPT = title.includes("chatgpt");
+                const isClaude = title.includes("claude");
+
+                let icon = "";
+                if (isGemini) {
+                    icon = `
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0; margin-left: -2px;">
+                            <path d="M12 2C12 2 12.5 7.5 18 8C12.5 8.5 12 14 12 14C12 14 11.5 8.5 6 8C11.5 7.5 12 2 12 2Z" fill="#4E8AFF"/>
+                            <path d="M19 14C19 14 19.3 16.7 22 17C19.3 17.3 19 20 19 20C19 20 18.7 17.3 16 17C18.7 16.7 19 14 19 14Z" fill="#8E75FF"/>
+                        </svg>
+                    `;
+                } else if (isChatGPT) {
+                    icon = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #10a37f; flex-shrink: 0;">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                        </svg>
+                    `;
+                } else if (isClaude) {
+                    icon = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #D97757; flex-shrink: 0;">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                        </svg>
+                    `;
+                } else {
+                    icon = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-color); opacity: 0.5; flex-shrink: 0;">
+                            <polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/>
+                        </svg>
+                    `;
+                }
+
+                return `
+                    <div class="recent-item" data-text="${encodeURIComponent(card.content)}">
+                        <span class="recent-title">${icon}${card.title || 'Untitled Prompt'}</span>
+                        <span class="recent-preview">${card.content}</span>
+                    </div>
+                `;
+            }).join('');
 
             // Add click listeners
             recentList.querySelectorAll('.recent-item').forEach(el => {
@@ -376,7 +422,7 @@ function renderHomeUI() {
         let color = "#FF3B30"; // Red
         
         if (score === 0) {
-            color = "rgba(255,255,255,0.2)"; 
+            color = "#aaa"; 
         } else if (score >= 80) {
             color = "#34C759"; // Green
         } else if (score >= 50) {
@@ -386,7 +432,7 @@ function renderHomeUI() {
         if (gaugeFill) gaugeFill.style.stroke = color;
         scoreCircle.style.color = color;
         scoreLabel.innerText = label;
-        scoreLabel.style.color = color !== "rgba(255,255,255,0.2)" ? color : "#fff";
+        scoreLabel.style.color = score === 0 ? "" : color;
     };
 
     const processLiveHeuristics = (text) => {

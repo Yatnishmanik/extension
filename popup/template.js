@@ -25,37 +25,40 @@ function renderTemplateUI() {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                border-bottom: 1px solid var(--border-dark, #333);
+                border-bottom: 1px solid var(--border-light);
                 padding: 20px 20px 8px 20px;
                 margin-bottom: 16px;
             }
             .template-title {
                 font-size: 14px;
-                font-weight: 500;
-                color: var(--text-color, #ccc);
+                font-weight: 600;
+                color: var(--text-light);
+            }
+            #prompt-box.dark-mode .template-title {
+                color: var(--text-dark);
             }
             .search-bar-container {
                 display: flex;
                 align-items: center;
                 justify-content: flex-start;
                 padding: 12px 20px;
-                border-bottom: 1px solid var(--border-dark, #333);
+                border-bottom: 1px solid var(--border-light);
                 flex-shrink: 0;
             }
             .search-input {
                 background: transparent;
                 border: none;
-                color: var(--text-color, #e0e0e0);
+                color: var(--text-light);
                 font-size: 13px;
                 outline: none;
-                width: 150px;
+                flex: 1;
                 margin-right: 8px;
             }
             .search-input::placeholder {
                 color: #666;
             }
             .search-icon {
-                color: var(--text-color, #ccc);
+                color: var(--text-light);
                 opacity: 0.7;
                 cursor: pointer;
             }
@@ -71,30 +74,45 @@ function renderTemplateUI() {
                 padding: 0;
             }
             .tag-pill {
-                background: #333;
-                border: 1px solid #444;
-                border-radius: 20px;
-                padding: 8px 18px;
-                font-size: 14px;
+                background: var(--card-light, #fff);
+                border: 1px solid var(--border-light);
+                border-radius: 8px;
+                padding: 14px 12px;
+                font-size: 13px;
                 font-weight: 500;
-                color: #e0e0e0;
+                font-family: 'Times New Roman', Times, serif;
+                color: var(--text-light);
                 cursor: pointer;
                 transition: background 0.2s, transform 0.1s;
-                flex: 1 1 auto;
+                flex: 1 1 calc(50% - 4px);
                 text-align: center;
-                min-width: 80px;
+                min-width: 0;
+                max-width: calc(50% - 4px);
+                box-sizing: border-box;
+            }
+            #prompt-box.dark-mode .tag-pill {
+                background: #212121;
+                border-color: rgba(255, 255, 255, 0.08);
+                color: #e0e0e0;
             }
             .tag-pill:hover {
-                background: #444;
+                background: rgba(0,0,0,0.04);
                 transform: scale(1.02);
             }
+            #prompt-box.dark-mode .tag-pill:hover {
+                background: #444;
+            }
             .category-divider {
-                border-bottom: 1px solid var(--border-dark, #333);
+                border-bottom: 1px solid var(--border-light);
                 padding: 8px 20px 8px 20px;
                 margin-bottom: 16px;
                 font-size: 14px;
                 font-weight: 500;
-                color: var(--text-color, #ccc);
+                color: var(--text-light);
+            }
+            #prompt-box.dark-mode .category-divider {
+                color: var(--text-dark);
+                border-bottom-color: var(--border-dark);
             }
         </style>
         <div class="template-wrapper">
@@ -114,7 +132,6 @@ function renderTemplateUI() {
                 <div class="tag-pill">notes</div>
                 <div class="tag-pill">summary</div>
                 <div class="tag-pill">flashcards</div>
-                <div class="tag-pill">revision</div>
             </div>
 
             <!-- Assignments Section -->
@@ -124,7 +141,6 @@ function renderTemplateUI() {
                 <div class="tag-pill">solutions</div>
                 <div class="tag-pill">case-study</div>
                 <div class="tag-pill">lab-report</div>
-                <div class="tag-pill">project-idea</div>
             </div>
 
             <!-- Exams Section -->
@@ -154,7 +170,6 @@ function renderTemplateUI() {
                 <div class="tag-pill">interview</div>
                 <div class="tag-pill">roadmap</div>
                 <div class="tag-pill">internship</div>
-                <div class="tag-pill">guidance</div>
             </div>
             <!-- DSA / Coding Section -->
             <div class="category-divider">🧠 DSA / Coding</div>
@@ -173,7 +188,6 @@ function renderTemplateUI() {
                 <div class="tag-pill">boilerplate</div>
                 <div class="tag-pill">api</div>
                 <div class="tag-pill">script</div>
-                <div class="tag-pill">convert-code</div>
             </div>
 
             <!-- Debugging Section -->
@@ -193,7 +207,6 @@ function renderTemplateUI() {
                 <div class="tag-pill">hld</div>
                 <div class="tag-pill">scalability</div>
                 <div class="tag-pill">architecture</div>
-                <div class="tag-pill">database</div>
             </div>
 
             <!-- Development Section -->

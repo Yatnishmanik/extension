@@ -1,0 +1,87 @@
+Promptimity API Endpoints Reference
+
+======================
+EXTENSION FEATURES & TOOLS
+======================
+Our extension is packed with tools designed to help you create perfect prompts:
+
+1. Prompt Library & Workspaces (Tabs)
+   - Create, edit, and delete custom workspace tabs.
+   - Save, organize, and quickly copy prompts from your library.
+   - Drag and drop to reorder tabs to your preference.
+   - Seamless backend synchronization to keep prompts backed up and accessible anywhere.
+
+2. Prompt Lab (Magic Enhance & Push)
+   - Instantly pull text from your active browser tab.
+   - Enhance drafts using AI, tailoring Response Size (Short to Mega) and Expertise Level (Beginner to Ph.D.).
+   - "Magic Push" seamlessly injects the AI-enhanced text back into the webpage input box.
+   - Smart Page Context: Automatically reads the webpage's main content to provide accurate context to the AI.
+
+3. Custom Personas
+   - Create and define custom AI personas with specific system instructions (e.g., UX Researcher, Senior Engineer).
+   - Save these personas to force the AI to adopt a specific tone and behavior when enhancing prompts.
+
+4. Premium AI Directory & Templates
+   - Browse a curated directory of premium AI tools and templates.
+   - Quick one-click copy for installation commands or prompt structures.
+
+5. AI Pipeline Configuration (Local & Cloud)
+   - Bring your own AI model: Choose between Local (Ollama - Free/Offline) or Cloud (xAI API - Premium).
+   - Secure offline storage for network authorization keys with built-in pipeline connection validation.
+
+6. History & Recent Activity
+   - Automatically saves recently used/clicked prompts to your "Home" tab for quick access.
+   - Manage and clear your prompt history with a single click.
+
+7. End-to-End Reliability
+   - Intelligent network status monitor with an auto-retry system.
+   - Robust offline handling and automatic session token management.
+
+8. Modern UI/UX
+   - Premium Apple-style glassmorphism interface.
+   - Fully supported Dark Mode and Light Mode themes.
+
+
+
+======================
+AUTHENTICATION
+======================
+GET    /api/auth/check-username           - Check if a username exists
+POST   /api/auth/signup                   - Register a new user
+POST   /api/auth/login                    - Authenticate user and get token
+GET    /api/auth/me                       - Get logged in user details
+PUT    /api/auth/profile                  - Update user profile information
+DELETE /api/auth/me                       - Delete user account and all associated data
+POST   /api/auth/google                   - Authenticate user via Google login
+POST   /api/auth/forgot-password          - Send password reset email
+POST   /api/auth/reset-password/:token    - Reset password using token
+
+======================
+TABS
+======================
+GET    /api/tabs                          - Get all saved tabs for the user
+POST   /api/tabs                          - Create a new tab
+PUT    /api/tabs/:id                      - Update an existing tab
+DELETE /api/tabs/:id                      - Delete a specific tab
+
+======================
+PROMPTS
+======================
+GET    /api/prompts                       - Get all saved prompts for the user
+POST   /api/prompts                       - Create a new prompt
+PUT    /api/prompts/:id                   - Update an existing prompt
+DELETE /api/prompts/:id                   - Delete a specific prompt
+
+======================
+HISTORY
+======================
+GET    /api/history                       - Get user activity history
+POST   /api/history                       - Add a new action log to history
+DELETE /api/history                       - Clear all user activity history
+DELETE /api/history/:id                   - Delete a specific history log entry
+
+======================
+SETTINGS
+======================
+GET    /api/settings                      - Get user settings (Target Model ID, API Key)
+POST   /api/settings                      - Create or update user settings

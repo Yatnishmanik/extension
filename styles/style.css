@@ -71,6 +71,24 @@
     scrollbar-width: none; /* Firefox */
 }
 
+/* Thin X Scrollbar */
+.thin-x-scrollbar::-webkit-scrollbar {
+    height: 4px;
+}
+.thin-x-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.thin-x-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(120, 120, 120, 0.4);
+    border-radius: 4px;
+}
+.thin-x-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(120, 120, 120, 0.6);
+}
+.thin-x-scrollbar {
+    scrollbar-width: thin; /* Firefox */
+}
+
 #prompt-box.active {
     opacity: 1;
     pointer-events: auto;
@@ -425,6 +443,10 @@
     z-index: 10; /* Base stack */
 }
 
+.card[data-tab="ai"] {
+    cursor: default;
+}
+
 .card:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 14px rgba(0,0,0,0.08); /* Float effect */
@@ -466,10 +488,10 @@
 }
 
 .card-title {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--text-light);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     letter-spacing: -0.01em;
     padding-right: 20px;
     display: flex;
@@ -487,30 +509,15 @@
 }
 
 .card-content {
-    font-size: 14px;
+    font-size: 12px;
     line-height: 1.5;
     color: var(--text-light);
     opacity: 0.8; /* Subdued read-only feel */
     white-space: pre-wrap;
     font-family: inherit;
     overflow-wrap: break-word;
-    
-    /* Uniform height constraints */
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    max-height: 20px;
-    transition: max-height 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.card:hover .card-content {
     display: block;
-    -webkit-line-clamp: unset;
-    line-clamp: unset;
     overflow: visible;
-    max-height: 600px;
 }
 
 /* Modal Specific Textarea for Prompts */
@@ -1483,4 +1490,261 @@ html.goprompts-sidebar-open * {
     visibility: visible;
     opacity: 1;
     top: 20px;
+}
+
+/* ===== Health Check — Server Down Page ===== */
+.server-down-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100%;
+    padding: 24px;
+    animation: fadeIn 0.4s ease;
+}
+
+.server-down-card {
+    text-align: center;
+    max-width: 320px;
+    width: 100%;
+}
+
+.server-down-illustration {
+    margin-bottom: 24px;
+    color: var(--text-light);
+    opacity: 0.55;
+    display: flex;
+    justify-content: center;
+}
+
+#prompt-box.dark-mode .server-down-illustration {
+    color: var(--text-dark);
+    opacity: 0.4;
+}
+
+/* SVG Animations */
+.server-led {
+    fill: #FF453A;
+    animation: ledPulse 2s ease-in-out infinite;
+}
+
+@keyframes ledPulse {
+    0%, 100% { opacity: 1; fill: #FF453A; }
+    50% { opacity: 0.3; fill: #FF6961; }
+}
+
+.pulse-ring-1 {
+    opacity: 0;
+    animation: pulseRing 3s ease-out infinite;
+}
+.pulse-ring-2 {
+    opacity: 0;
+    animation: pulseRing 3s ease-out 1s infinite;
+}
+
+@keyframes pulseRing {
+    0% { opacity: 0.4; transform: scale(0.85); }
+    100% { opacity: 0; transform: scale(1.15); }
+}
+
+.pulse-ring-1, .pulse-ring-2 {
+    transform-origin: 60px 55px;
+}
+
+.cable-right {
+    animation: cableDrift 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes cableDrift {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(4px); }
+}
+
+.error-x {
+    animation: errorShake 4s ease-in-out infinite;
+}
+
+@keyframes errorShake {
+    0%, 90%, 100% { transform: translate(60px, 96px) rotate(0deg); }
+    93% { transform: translate(60px, 96px) rotate(-6deg); }
+    96% { transform: translate(60px, 96px) rotate(6deg); }
+}
+
+.server-down-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px 0;
+    color: var(--text-light);
+}
+
+#prompt-box.dark-mode .server-down-title {
+    color: var(--text-dark);
+}
+
+.server-down-message {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0 0 28px 0;
+    color: var(--text-light);
+    opacity: 0.6;
+}
+
+#prompt-box.dark-mode .server-down-message {
+    color: var(--text-dark);
+    opacity: 0.5;
+}
+
+/* Retry Button */
+.server-down-retry-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 28px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent, #007aff);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.35);
+    font-family: inherit;
+    letter-spacing: -0.01em;
+}
+
+.server-down-retry-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 122, 255, 0.45);
+    background: #0066e0;
+}
+
+.server-down-retry-btn:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 2px 10px rgba(0, 122, 255, 0.3);
+}
+
+.server-down-retry-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.server-down-retry-btn .retry-icon {
+    transition: transform 0.3s ease;
+}
+
+.server-down-retry-btn.spinning .retry-icon {
+    animation: spinRetry 0.8s linear infinite;
+}
+
+@keyframes spinRetry {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Auto-retry countdown */
+.server-down-auto-retry {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--text-light);
+    opacity: 0.4;
+    transition: opacity 0.3s;
+}
+
+#prompt-box.dark-mode .server-down-auto-retry {
+    color: var(--text-dark);
+}
+
+.server-down-auto-retry span {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent, #007aff);
+}
+
+/* Footer status */
+.server-down-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 36px;
+    font-size: 11px;
+    color: var(--text-light);
+    opacity: 0.35;
+}
+
+#prompt-box.dark-mode .server-down-footer {
+    color: var(--text-dark);
+}
+
+.server-down-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #FF453A;
+    animation: dotBlink 2s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(255, 69, 58, 0.4);
+}
+
+@keyframes dotBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+
+/* ===== Health Check — Loading State ===== */
+.health-loading-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100%;
+    gap: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.health-loading-spinner {
+    color: var(--text-light);
+    opacity: 0.6;
+}
+
+#prompt-box.dark-mode .health-loading-spinner {
+    color: var(--text-dark);
+}
+
+.spinner-arc {
+    animation: spinArc 1s linear infinite;
+    transform-origin: 24px 24px;
+}
+
+@keyframes spinArc {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.health-loading-text {
+    font-size: 13px;
+    color: var(--text-light);
+    opacity: 0.5;
+    margin: 0;
+    font-weight: 500;
+}
+
+#prompt-box.dark-mode .health-loading-text {
+    color: var(--text-dark);
+}
+
+.loading-dots::after {
+    content: '';
+    animation: loadingDots 1.5s steps(4, end) infinite;
+}
+
+@keyframes loadingDots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
 }

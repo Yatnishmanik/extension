@@ -41,7 +41,7 @@ const svgMap = {
     video: '<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>'
 };
 
-function renderSidebar(tabsData, onTabClick) {
+function renderSidebar(tabsData, onTabClick, userData = null) {
     const sidebar = document.getElementById("sidebar");
     const scrollArea = document.getElementById("sidebar-scroll");
     const footerArea = document.getElementById("sidebar-footer");
@@ -81,7 +81,7 @@ function renderSidebar(tabsData, onTabClick) {
             e.preventDefault();
             e.stopPropagation();
             if (['home', 'promptlab', 'template', 'ai'].includes(tab.id)) return;
-            showContextMenu(e, tab, tabsData, onTabClick);
+            showContextMenu(e, tab, tabsData, onTabClick, userData);
         });
 
         tabEl.addEventListener("click", () => {
@@ -122,7 +122,7 @@ function renderSidebar(tabsData, onTabClick) {
                 // Persist to local storage explicitly keeping settings at the end
                 tabsData.tabs = [...draggableTabs, settingsTab];
                 await chrome.storage.local.set({ 'goprompts_tabs': tabsData });
-                renderSidebar(tabsData, onTabClick);
+                renderSidebar(tabsData, onTabClick, userData);
             }
         });
         
@@ -137,7 +137,7 @@ function renderSidebar(tabsData, onTabClick) {
         <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span>
         <div class="tab-label">Add</div>
     `;
-    addTabEl.addEventListener("click", () => showAddTabModal(tabsData, onTabClick));
+    addTabEl.addEventListener("click", () => showAddTabModal(tabsData, onTabClick, null, userData));
     if (footerArea) footerArea.appendChild(addTabEl);
 
     // 3. Render Settings statically (lowest)
@@ -159,24 +159,65 @@ function renderSidebar(tabsData, onTabClick) {
     const profileEl = document.createElement("div");
     profileEl.classList.add("side-tab");
     const userSvg = svgMap['user'];
+    const displayName = userData ? (userData.name || userData.username || 'User') : 'Profile';
+    
     profileEl.innerHTML = `
         <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${userSvg}</svg></span>
-        <div class="tab-label">Profile</div>
+        <div class="tab-label">${displayName}</div>
     `;
-    profileEl.addEventListener("click", () => {
-        document.querySelectorAll(".side-tab").forEach(t => t.classList.remove("active"));
-        profileEl.classList.add('active');
-        chrome.storage.local.remove(['promptimity_is_logged_in'], () => {
+    profileEl.title = displayName;
+    
+    profileEl.addEventListener("click", (e) => {
+        showProfileMenu(e, profileEl);
+    });
+    
+    if (footerArea) footerArea.appendChild(profileEl);
+}
+
+function showProfileMenu(e, profileEl) {
+    if (window.gpActiveMenu) window.gpActiveMenu.remove();
+
+    const container = document.getElementById("prompt-box") || document.body;
+    const rect = container.getBoundingClientRect();
+
+    const menu = document.createElement("div");
+    menu.className = "context-menu";
+    menu.style.display = "block";
+    menu.style.left = `75px`; // Adjusted to sit right of the sidebar (sidebar is 68px)
+    menu.style.bottom = `10px`;
+    menu.style.top = 'auto';
+
+    menu.innerHTML = `
+        <div class="context-menu-item danger" id="menu-logout" style="display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.8;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+        </div>
+    `;
+
+    container.appendChild(menu);
+    window.gpActiveMenu = menu;
+
+    menu.querySelector("#menu-logout").onclick = () => {
+        menu.remove();
+        window.gpActiveMenu = null;
+        chrome.storage.local.clear(() => {
             if (typeof showAuthView === 'function') {
                 showAuthView();
             }
             if (typeof window.showToast === 'function') window.showToast("Successfully logged out");
         });
-    });
-    if (footerArea) footerArea.appendChild(profileEl);
+    };
+
+    // Close when clicking away
+    const closeMenu = () => {
+        menu.remove();
+        window.gpActiveMenu = null;
+        window.removeEventListener("click", closeMenu);
+    };
+    setTimeout(() => window.addEventListener("click", closeMenu), 10);
 }
 
-function showContextMenu(e, tab, tabsData, onTabClick) {
+function showContextMenu(e, tab, tabsData, onTabClick, userData = null) {
     if (window.gpActiveMenu) window.gpActiveMenu.remove();
 
     const container = document.getElementById("prompt-box") || document.body;
@@ -202,17 +243,58 @@ function showContextMenu(e, tab, tabsData, onTabClick) {
     menu.querySelector("#menu-edit").onclick = () => {
         menu.remove();
         window.gpActiveMenu = null;
-        showAddTabModal(tabsData, onTabClick, tab);
+        showAddTabModal(tabsData, onTabClick, tab, userData);
     };
 
     if (menu.querySelector("#menu-delete")) {
         menu.querySelector("#menu-delete").onclick = async () => {
             menu.remove();
             window.gpActiveMenu = null;
+            
+            // Check if we are deleting the active tab
+            const activeTabEl = document.querySelector(".side-tab.active");
+            const wasActive = activeTabEl && activeTabEl.title === tab.name;
+
+            try {
+                // 1. Get cards for this tab to clean up recent_cards
+                const cardData = await loadCards(tab.id);
+                const cardsToDelete = cardData.cards || [];
+                const contentsToDelete = new Set(cardsToDelete.map(c => c.content));
+
+                // 2. Delete from Backend
+                const { promptimity_token } = await chrome.storage.local.get(['promptimity_token']);
+                if (promptimity_token) {
+                    await fetch(`http://localhost:5000/api/tabs/${tab.id}`, {
+                        method: "DELETE",
+                        headers: { "x-auth-token": promptimity_token }
+                    });
+                }
+
+                // 3. Delete tab cards from local storage
+                await chrome.storage.local.remove(`goprompts_cards_${tab.id}`);
+
+                // 4. Clean up recent_cards
+                const { goprompts_recent_cards } = await chrome.storage.local.get(['goprompts_recent_cards']);
+                if (goprompts_recent_cards) {
+                    const filteredRecents = goprompts_recent_cards.filter(c => !contentsToDelete.has(c.content));
+                    await chrome.storage.local.set({ 'goprompts_recent_cards': filteredRecents });
+                }
+
+            } catch(e) {
+                console.error("Error during cascading tab deletion:", e);
+            }
+
+            // 5. Remove tab from sidebar and state
             tabsData.tabs = tabsData.tabs.filter(t => t.id !== tab.id);
             await chrome.storage.local.set({ 'goprompts_tabs': tabsData });
-            renderSidebar(tabsData, onTabClick);
-            if (typeof window.showToast === 'function') window.showToast("Tab deleted");
+            renderSidebar(tabsData, onTabClick, userData);
+            
+            // 6. If we deleted the active tab, switch to home
+            if (wasActive) {
+                onTabClick('home', 'Home');
+            }
+
+            if (typeof window.showToast === 'function') window.showToast("Tab and associated prompts deleted");
         };
     }
 
@@ -225,7 +307,7 @@ function showContextMenu(e, tab, tabsData, onTabClick) {
     setTimeout(() => window.addEventListener("click", closeMenu), 10);
 }
 
-function showAddTabModal(tabsData, onTabClick, existingTab = null) {
+function showAddTabModal(tabsData, onTabClick, existingTab = null, userData = null) {
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     
@@ -282,24 +364,72 @@ function showAddTabModal(tabsData, onTabClick, existingTab = null) {
 
         if (existingTab) {
             // Update existing
+            try {
+                const { promptimity_token } = await chrome.storage.local.get(['promptimity_token']);
+                if (promptimity_token) {
+                    await fetch(`http://localhost:5000/api/tabs/${existingTab.id}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "x-auth-token": promptimity_token
+                        },
+                        body: JSON.stringify({ name, icon: selectedIcon })
+                    });
+                }
+            } catch(e) {
+                console.error("API Error updating tab:", e);
+            }
+
             existingTab.name = name;
             existingTab.description = desc;
             existingTab.icon = selectedIcon;
             if (typeof window.showToast === 'function') window.showToast("Tab updated");
         } else {
-            // Add new
-            const newId = name.toLowerCase().replace(/[^a-z0-0]/g, '_') + '_' + Date.now();
-            tabsData.tabs.push({ 
-                id: newId, 
-                name: name, 
-                icon: selectedIcon,
-                description: desc 
-            });
-            if (typeof window.showToast === 'function') window.showToast("Tab created");
+            // Add new — only add if backend confirms success
+            const { promptimity_token } = await chrome.storage.local.get(['promptimity_token']);
+            
+            if (!promptimity_token) {
+                if (typeof window.showToast === 'function') window.showToast("Please log in to create a tab");
+                return;
+            }
+
+            try {
+                const res = await fetch("http://localhost:5000/api/tabs", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-auth-token": promptimity_token
+                    },
+                    body: JSON.stringify({ name, icon: selectedIcon, order: tabsData.tabs.length })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({}));
+                    const errorMsg = errorData.msg || errorData.message || "Failed to create tab";
+                    if (typeof window.showToast === 'function') window.showToast(errorMsg);
+                    return;
+                }
+
+                const data = await res.json();
+                const newTabId = data._id;
+
+                tabsData.tabs.push({ 
+                    id: newTabId, 
+                    name: name, 
+                    icon: selectedIcon,
+                    description: desc 
+                });
+
+                if (typeof window.showToast === 'function') window.showToast("Tab created");
+            } catch(e) {
+                console.error("API Error creating tab:", e);
+                if (typeof window.showToast === 'function') window.showToast("Could not connect to server");
+                return;
+            }
         }
         
         await chrome.storage.local.set({ 'goprompts_tabs': tabsData });
         overlay.remove();
-        renderSidebar(tabsData, onTabClick);
+        renderSidebar(tabsData, onTabClick, userData);
     };
 }
