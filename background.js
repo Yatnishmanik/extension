@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
     // Natively fetch routing rules from secure offline storage
     chrome.storage.local.get(['goprompts_ai_provider', 'goprompts_api_key', 'goprompts_ai_model'], (settings) => {
         const provider = settings.goprompts_ai_provider || 'ollama';
-        const model = settings.goprompts_ai_model || (provider === 'xai' ? 'grok-4-1-fast-non-reasoning' : 'llama3');
+        const model = settings.goprompts_ai_model || (provider === 'xai' ? 'grok-2' : 'llama3');
         
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 20000); // 20-second hard timeout
@@ -103,7 +103,7 @@ chrome.runtime.onMessage.addListener((req, sender, sendResponse) => {
         
         chrome.storage.local.get(['goprompts_ai_provider', 'goprompts_api_key', 'goprompts_ai_model'], (settings) => {
             const provider = settings.goprompts_ai_provider || 'ollama';
-            const model = settings.goprompts_ai_model || (provider === 'xai' ? 'grok-4-1-fast-non-reasoning' : 'llama3');
+            const model = settings.goprompts_ai_model || (provider === 'xai' ? 'grok-2' : 'llama3');
             
             const styleIntention = req.style || 'Professional';
             const personaRole = req.personaInstruction ? req.personaInstruction : (req.persona ? `Act as: ${req.persona}.` : 'Act as an Expert Prompt Engineer.');
@@ -206,7 +206,7 @@ Follow these rules strictly:
         
         chrome.storage.local.get(['goprompts_ai_provider', 'goprompts_api_key', 'goprompts_ai_model'], (settings) => {
             const provider = settings.goprompts_ai_provider || 'ollama';
-            const model = settings.goprompts_ai_model || (provider === 'xai' ? 'grok-4-1-fast-non-reasoning' : 'llama3');
+            const model = settings.goprompts_ai_model || (provider === 'xai' ? 'grok-2' : 'llama3');
             
             const systemPrompt = `You are an expert copyeditor. Your ONLY task is to perfectly correct the grammar, spelling, and punctuation of the user's text.
 Follow these rules strictly:
@@ -298,15 +298,14 @@ Follow these rules strictly:
         
         chrome.storage.local.get(['goprompts_ai_provider', 'goprompts_api_key', 'goprompts_ai_model'], (settings) => {
             const provider = settings.goprompts_ai_provider || 'ollama';
-            const model = settings.goprompts_ai_model || (provider === 'xai' ? 'grok-4-1-fast-non-reasoning' : 'llama3');
+            const model = settings.goprompts_ai_model || (provider === 'xai' ? 'grok-2' : 'llama3');
             
-            const systemPrompt = `You are an expert prompt engineer. Your task is to enhance the user's prompt to make it clear, highly effective, and professional.
+            const systemPrompt = `You are an expert prompt engineer. Your task is to enhance the user's prompt to make it clear, comprehensive, highly effective, and structured.
 Follow these rules strictly:
-1. Enhance the prompt in a normal, straightforward way. Do NOT overcomplicate.
-2. The enhanced prompt MUST BE STRICTLY LESS THAN 100 WORDS.
-3. Keep the user's original intent intact.
-4. Do NOT add conversational intros, outros, or explanations (e.g., "Here is the enhanced prompt:").
-5. OUTPUT ONLY THE ENHANCED PROMPT TEXT. NO MARKDOWN BLOCKS \`\`\`. Start immediately with the enhanced prompt.`;
+1. Transform the user's raw intent into a detailed, comprehensive prompt with structured sections (e.g., core aspects, components, expectations, limitations) if the input implies or requests a complex, academic, or deep exploration.
+2. Keep the user's original intent intact, but expand it to cover all necessary criteria, structures, and context for an AI to give a world-class response.
+3. Do NOT add conversational intros, outros, or explanations (e.g., "Here is the enhanced prompt:").
+4. OUTPUT ONLY THE ENHANCED PROMPT TEXT. NO MARKDOWN BLOCKS \`\`\`. Start immediately with the enhanced prompt.`;
 
             let finalInput = `[USER DRAFT]\n${req.draft}`;
 

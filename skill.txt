@@ -1,0 +1,112 @@
+========================================================================
+             MOST USABLE AI SKILLS FOR DEVELOPERS & STUDENTS
+========================================================================
+
+Skills are specialized instruction sets that teach your AI assistant how 
+to handle specific tasks. You can trigger any of these by typing "@" 
+followed by the skill name in your AI chat (e.g., @brainstorming).
+
+Here is a curated list of the most valuable skills for both developers 
+and students:
+
+------------------------------------------------------------------------
+💻 1. FOR DEVELOPERS & SOFTWARE ENGINEERS
+------------------------------------------------------------------------
+* @react-best-practices
+  - Purpose: Learn and implement modern React, Next.js App Router, and 
+    state management patterns.
+  - Best for: Web developers building modern user interfaces.
+
+* @systematic-debugging
+  - Purpose: Debug complex issues methodically by forming hypotheses, 
+    isolating variables, and running trace steps rather than guessing.
+  - Best for: Developers trying to squash elusive bugs.
+
+* @test-driven-development
+  - Purpose: Helps you write robust tests (unit/integration) before 
+    writing actual logic (TDD approach).
+  - Best for: Improving code quality and test coverage.
+
+* @webapp-testing
+  - Purpose: Write and automate end-to-end tests for web applications 
+    using Playwright or Cypress.
+  - Best for: Quality assurance and production validation.
+
+* @senior-fullstack
+  - Purpose: Design database schemas, APIs, and implement full-stack 
+    features with secure, robust patterns.
+  - Best for: Building applications from scratch.
+
+* @mcp-builder
+  - Purpose: Build custom Model Context Protocol (MCP) servers to 
+    connect external databases, APIs, and tools directly to your AI.
+  - Best for: Advanced developers extending AI capabilities.
+
+* @subagent-driven-development
+  - Purpose: Coordinate and delegate sub-tasks to multiple parallel AI 
+    agents to accelerate large development workflows.
+  - Best for: Large-scale refactoring and system integrations.
+
+
+------------------------------------------------------------------------
+📚 2. FOR STUDENTS (STUDY, WRITING & OFFICE PRODUCTIVITY)
+------------------------------------------------------------------------
+* @brainstorming
+  - Purpose: Brainstorm essays, research projects, product designs, or 
+    coding projects before jumpstarting the execution.
+  - Best for: Resolving writer's block and outlining project scopes.
+
+* @notebooklm
+  - Purpose: Synthesize, summarize, and query academic sources, study 
+    guides, and documents via Google NotebookLM techniques.
+  - Best for: Studying for exams and reviewing complex lecture notes.
+
+* @pdf
+  - Purpose: Extract text, merge multiple study documents, split chapters, 
+    or automatically fill out digital forms.
+  - Best for: Managing textbooks, research papers, and assignments.
+
+* @doc-coauthoring
+  - Purpose: Collaborate with the AI to draft research papers, essay 
+    structures, lab reports, or technical documentations.
+  - Best for: Creative writing and project report structures.
+
+* @docx / @xlsx / @pptx
+  - Purpose: Create and format Word documents, write Excel formulas 
+    with custom charts, or build beautifully styled PowerPoint slides.
+  - Best for: Preparing presentations, analyzing lab data, and homework.
+
+* @algorithmic-art
+  - Purpose: Create interactive visual art, animations, or geometry 
+    using code (specifically p5.js and canvas).
+  - Best for: Learning creative coding and building interactive pages.
+
+
+------------------------------------------------------------------------
+📈 3. GENERAL PRODUCTIVITY & WORKFLOW (FOR BOTH)
+------------------------------------------------------------------------
+* @writing-plans
+  - Purpose: Outline clear step-by-step implementation plans before 
+    beginning a complex homework assignment or software task.
+  - Best for: Getting structured, stress-free roadmaps.
+
+* @executing-plans
+  - Purpose: Keep track of project progress with checkpoints, validating 
+    each step before moving to the next.
+  - Best for: Ensuring you don't miss requirements in complex projects.
+
+* @verification-before-completion
+  - Purpose: Perform rigorous checks, linting, tests, and reviews before 
+    handing in an assignment or merging a PR.
+  - Best for: Guaranteeing zero-defect deliverables.
+
+* @skill-creator
+  - Purpose: Teach the AI a custom workflow you do frequently and wrap 
+    it into a reusable new skill!
+  - Best for: Automating repetitive tasks.
+
+========================================================================
+💡 HOW TO USE:
+To invoke any of these, simply type `@skill-name` followed by your prompt 
+in your agent-supported workspace.
+========================================================================

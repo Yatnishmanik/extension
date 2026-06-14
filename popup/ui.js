@@ -179,7 +179,7 @@ function renderLoginUI() {
                 <div class="auth-input-group">
                     <span class="auth-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></span>
                     <input type="password" placeholder="Password" class="auth-input" id="auth-password">
-                    <span class="auth-icon pointer" style="margin-left:auto"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
+                    <span class="auth-icon pointer" id="toggle-password-visibility" style="margin-left:auto"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
                 </div>
 
                 <div class="auth-links">
@@ -200,7 +200,33 @@ function renderLoginUI() {
         window.open("http://localhost:3000/signup", "_blank");
     });
 
-    document.getElementById("login-submit-btn").addEventListener("click", mockLogin);
+    const loginSubmitBtn = document.getElementById("login-submit-btn");
+    loginSubmitBtn.addEventListener("click", mockLogin);
+
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            loginSubmitBtn.click();
+        }
+    };
+    document.getElementById("auth-username").addEventListener("keydown", handleEnterKey);
+    document.getElementById("auth-password").addEventListener("keydown", handleEnterKey);
+
+    const togglePasswordBtn = document.getElementById("toggle-password-visibility");
+    const passwordInput = document.getElementById("auth-password");
+    if (togglePasswordBtn && passwordInput) {
+        togglePasswordBtn.addEventListener("click", () => {
+            const isPassword = passwordInput.getAttribute("type") === "password";
+            passwordInput.setAttribute("type", isPassword ? "text" : "password");
+            
+            // Toggle eye / eye-off icon
+            if (isPassword) {
+                togglePasswordBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+            } else {
+                togglePasswordBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+            }
+        });
+    }
 }
 
 function renderSignupUI() {
@@ -268,6 +294,13 @@ async function mockLogin() {
         return;
     }
 
+    const btn = document.getElementById("login-submit-btn");
+    const originalText = btn ? btn.innerText : "Continue";
+    if (btn) {
+        btn.innerText = "Processing...";
+        btn.disabled = true;
+    }
+
     try {
         const response = await fetch("http://localhost:5000/api/auth/login", {
             method: "POST",
@@ -298,9 +331,17 @@ async function mockLogin() {
             if (typeof window.showToast === 'function') window.showToast("Successfully logged in");
         } else {
             if (typeof window.showToast === 'function') window.showToast(data.msg || "Login failed");
+            if (btn) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         }
     } catch (error) {
         console.error("Login error:", error);
         if (typeof window.showToast === 'function') window.showToast("Error connecting to server");
+        if (btn) {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
     }
 }

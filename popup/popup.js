@@ -37,6 +37,10 @@ window.initPromptimityTabs = async function(forceSync = false) {
         // Initialize Sidebar and Default View
         const { promptimity_user } = await chrome.storage.local.get(['promptimity_user']);
         renderSidebar(tabsData, async (tabId, name) => {
+            const tabsContainer = document.getElementById("tabs-container");
+            if (tabsContainer) {
+                tabsContainer.style.overflow = ""; // Restore scroll when leaving home view
+            }
             if (tabId === 'settings') {
                 renderSettingsUI(name);
             } else if (tabId === 'promptlab') {
@@ -53,6 +57,10 @@ window.initPromptimityTabs = async function(forceSync = false) {
 
         // Set initial state
         if (tabsData.tabs && tabsData.tabs.length > 0) {
+            const tabsContainer = document.getElementById("tabs-container");
+            if (tabsContainer) {
+                tabsContainer.style.overflow = ""; // Reset overflow on load
+            }
             const firstTab = tabsData.tabs[0];
             if (firstTab.id === 'settings') {
                 renderSettingsUI(firstTab.name);

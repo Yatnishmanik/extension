@@ -133,6 +133,28 @@ function renderHomeUI() {
             .check-item.pass .icon-pass { display: block; }
             
             .recent-section-title { font-size: 15px; font-weight: 600; color: var(--text-color); margin: 0; padding: 0 20px 12px 20px; display: flex; align-items: center; gap: 6px; }
+            #clear-recent-btn {
+                background: rgba(255, 59, 48, 0.06);
+                border: 1px solid rgba(255, 59, 48, 0.2);
+                padding: 4px 10px;
+                border-radius: 6px;
+                cursor: pointer;
+                color: #ff3b30;
+                font-size: 11px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            }
+            #clear-recent-btn:hover {
+                background: rgba(255, 59, 48, 0.16);
+                border-color: rgba(255, 59, 48, 0.35);
+                transform: translateY(-1px);
+            }
+            #clear-recent-btn:active {
+                transform: translateY(1px);
+            }
             .recent-list { display: flex; flex-direction: column; gap: 12px; padding: 0; }
             .recent-item {
                 padding: 12px 16px; 
@@ -209,15 +231,31 @@ function renderHomeUI() {
                         transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
                         box-sizing: border-box;
                     }
-                    .score-cards-container:hover .eval-params-card {
+                    .score-cards-container.show-eval .eval-params-card {
                         opacity: 1;
                         visibility: visible;
                         padding-top: 16px !important;
                         padding-bottom: 16px !important;
                         transform: translateY(0);
                     }
+                    #score-card-trigger {
+                        cursor: pointer;
+                        transition: all 0.2s ease-in-out;
+                    }
+                    #score-card-trigger:hover {
+                        transform: translateY(-1px);
+                        border-color: rgba(138, 90, 236, 0.4) !important;
+                        box-shadow: 0 6px 24px rgba(138, 90, 236, 0.1) !important;
+                    }
+                    #prompt-box.dark-mode #score-card-trigger:hover {
+                        border-color: rgba(138, 90, 236, 0.5) !important;
+                        box-shadow: 0 6px 24px rgba(138, 90, 236, 0.2) !important;
+                    }
+                    #score-card-trigger:active {
+                        transform: translateY(1px);
+                    }
                 </style>
-                <div class="score-card-theme" style="margin-bottom: 8px; padding: 12px 16px;">
+                <div class="score-card-theme" id="score-card-trigger" style="margin-bottom: 8px; padding: 12px 16px;">
                     <div class="score-display-wrapper" style="margin-top: 0;">
                         <div class="gauge-wrapper">
                             <svg width="64" height="64" viewBox="0 0 100 100">
@@ -229,7 +267,7 @@ function renderHomeUI() {
                         <div class="score-divider"></div>
                         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
                             <div id="score-label" style="font-size: 16px; font-weight: 600;">Prompt Score</div>
-                            <div style="font-size: 11px; opacity: 0.4; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px;">Quality & Precision</div>
+                            <div style="font-size: 11px; opacity: 0.4; font-weight: 400; letter-spacing: 1.5px; text-transform:  margin-top: 2px;">Quality & Precision</div>
                         </div>
                     </div>
                 </div>
@@ -273,10 +311,13 @@ function renderHomeUI() {
                 <span>Enhance Prompt</span>
             </button>
 
-                <h3 class="recent-section-title" style="margin-top: 16px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    Recent Prompts
-                </h3>
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 20px 12px 20px; margin-top: 16px;">
+                    <h3 class="recent-section-title" style="padding: 0; margin: 0; display: flex; align-items: center; gap: 6px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Recent Prompts
+                    </h3>
+                    <button id="clear-recent-btn" title="Clear Recent Prompts">Clear</button>
+                </div>
             </div>
 
             <div class="recent-prompts-section">
@@ -324,6 +365,23 @@ function renderHomeUI() {
     const chkFormat = container.querySelector("#chk-format");
     const chkBounds = container.querySelector("#chk-bounds");
     const recentList = container.querySelector("#recent-list");
+
+    const scoreCardTrigger = container.querySelector("#score-card-trigger");
+    const scoreCardsContainer = container.querySelector(".score-cards-container");
+
+    if (scoreCardTrigger && scoreCardsContainer) {
+        scoreCardTrigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            scoreCardsContainer.classList.toggle("show-eval");
+        });
+
+        // Close evaluation panel when clicking anywhere else in the document
+        document.addEventListener("click", (e) => {
+            if (!scoreCardsContainer.contains(e.target)) {
+                scoreCardsContainer.classList.remove("show-eval");
+            }
+        });
+    }
 
     const renderRecentPrompts = (rawCards) => {
         const distinct = [];
@@ -389,6 +447,8 @@ function renderHomeUI() {
                     pushToPage(decoded);
                 });
             });
+        } else {
+            recentList.innerHTML = `<div style="font-size: 12px; opacity: 0.6; text-align: center; padding: 20px;">No recent prompts yet.</div>`;
         }
     };
 
@@ -396,6 +456,18 @@ function renderHomeUI() {
     chrome.storage.local.get(['goprompts_recent_cards'], (result) => {
         renderRecentPrompts(result.goprompts_recent_cards || []);
     });
+
+    const clearRecentBtn = container.querySelector("#clear-recent-btn");
+    if (clearRecentBtn) {
+        clearRecentBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            chrome.storage.local.set({ goprompts_recent_cards: [] }, () => {
+                if (typeof window.showToast === 'function') {
+                    window.showToast("Cleared recent prompts");
+                }
+            });
+        });
+    }
 
     // Listen for live updates
     const storageListener = (changes, namespace) => {
@@ -498,7 +570,11 @@ function renderHomeUI() {
     grammarBtn.addEventListener('click', async () => {
         const text = await pullCurrentPromptText();
         if (!text) {
-            alert("Please type a prompt in the active page's text box to correct it.");
+            if (typeof window.showToast === 'function') {
+                window.showToast("Please type a prompt in the active page's text box to correct it.");
+            } else {
+                alert("Please type a prompt in the active page's text box to correct it.");
+            }
             return;
         }
 
@@ -529,7 +605,11 @@ function renderHomeUI() {
             if (res && res.success) {
                 pushToPage(res.output.trim());
             } else {
-                alert("Grammar correction failed: " + (res?.error || 'Unknown error'));
+                if (typeof window.showToast === 'function') {
+                    window.showToast("Grammar correction failed: " + (res?.error || 'Unknown error'));
+                } else {
+                    alert("Grammar correction failed: " + (res?.error || 'Unknown error'));
+                }
             }
         });
     });
@@ -537,7 +617,11 @@ function renderHomeUI() {
     enhanceBtn.addEventListener('click', async () => {
         const text = await pullCurrentPromptText();
         if (!text) {
-            alert("Please type a prompt in the active page's text box to enhance it.");
+            if (typeof window.showToast === 'function') {
+                window.showToast("Please type a prompt in the active page's text box to enhance it.");
+            } else {
+                alert("Please type a prompt in the active page's text box to enhance it.");
+            }
             return;
         }
 
@@ -568,7 +652,11 @@ function renderHomeUI() {
             if (res && res.success) {
                 pushToPage(res.output.trim());
             } else {
-                alert("Enhancement failed: " + (res?.error || 'Unknown error'));
+                if (typeof window.showToast === 'function') {
+                    window.showToast("Enhancement failed: " + (res?.error || 'Unknown error'));
+                } else {
+                    alert("Enhancement failed: " + (res?.error || 'Unknown error'));
+                }
             }
         });
     });

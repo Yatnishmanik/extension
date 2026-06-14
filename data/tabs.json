@@ -4,8 +4,8 @@
     { "id": "promptlab", "name": "Prompt Lab", "icon": "🔬" },
     {
       "id": "template",
-      "name": "Template",
-      "icon": "edit"
+      "name": "Skills",
+      "icon": "star"
     },
     {
       "id": "ai",

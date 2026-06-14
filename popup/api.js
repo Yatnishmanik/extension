@@ -22,7 +22,12 @@ async function loadTabs(forceSync = false) {
                 const hasPromptLab = cachedTabs.tabs.some(t => t.id === 'promptlab');
                 if (!hasSettings) cachedTabs.tabs.push({ id: 'settings', name: 'Settings', icon: '⚙️' });
                 if (!hasPromptLab) cachedTabs.tabs.splice(1, 0, { id: 'promptlab', name: 'Prompt Lab', icon: '🔬' });
-                cachedTabs.tabs = cachedTabs.tabs.filter(t => t.id !== 'research' && t.name !== 'Ideation');
+                cachedTabs.tabs = cachedTabs.tabs.filter(t => t.id !== 'research' && t.name !== 'Ideation').map(t => {
+                    if (t.id === 'template') {
+                        return { ...t, name: 'Skills', icon: 'star' };
+                    }
+                    return t;
+                });
             }
             
             // Resolve immediately for snappy UI unless forceSync is requested
@@ -54,7 +59,12 @@ async function loadTabs(forceSync = false) {
                         const mergedTabs = { tabs: [...defaultTabs, ...customUserTabs] };
                         if (!mergedTabs.tabs.some(t => t.id === 'settings')) mergedTabs.tabs.push({ id: 'settings', name: 'Settings', icon: '⚙️' });
                         if (!mergedTabs.tabs.some(t => t.id === 'promptlab')) mergedTabs.tabs.splice(1, 0, { id: 'promptlab', name: 'Prompt Lab', icon: '🔬' });
-                        mergedTabs.tabs = mergedTabs.tabs.filter(t => t.id !== 'research' && t.name !== 'Ideation');
+                        mergedTabs.tabs = mergedTabs.tabs.filter(t => t.id !== 'research' && t.name !== 'Ideation').map(t => {
+                            if (t.id === 'template') {
+                                return { ...t, name: 'Skills', icon: 'star' };
+                            }
+                            return t;
+                        });
 
                         await chrome.storage.local.set({ 'goprompts_tabs': mergedTabs });
                         
@@ -236,9 +246,9 @@ async function loadUserSettings() {
                     goprompts_ai_provider: 'xai' // Hardcoded to Cloud: xAI API (Premium)
                 };
 
-                // Use the exact field names from the backend model
-                updates.goprompts_api_key = settings.networkAuthKey || '';
-                updates.goprompts_ai_model = settings.targetModelId || '';
+                // Only overwrite if non-empty to preserve valid local configurations
+                if (settings.networkAuthKey) updates.goprompts_api_key = settings.networkAuthKey;
+                if (settings.targetModelId) updates.goprompts_ai_model = settings.targetModelId;
 
                 await chrome.storage.local.set(updates);
                 console.log("User settings synced from API (Source: Backend)");

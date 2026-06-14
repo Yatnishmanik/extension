@@ -1,5 +1,6 @@
 function renderPromptLabUI() {
     const container = document.getElementById("tabs-container");
+    if (container) container.style.overflow = "";
     container.innerHTML = `
         <style>
             .apple-switch input:checked + .apple-slider { background-color: #34C759 !important; }
@@ -159,7 +160,7 @@ function renderPromptLabUI() {
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                     <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                         <label class="apple-switch" style="position: relative; display: inline-block; width: 34px; height: 20px; margin: 0; flex-shrink: 0;">
-                            <input type="checkbox" id="lab-context-btn" checked style="opacity: 0; width: 0; height: 0; position: absolute;">
+                            <input type="checkbox" id="lab-context-btn" style="opacity: 0; width: 0; height: 0; position: absolute;">
                             <span class="apple-slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(128,128,128,0.3); transition: .3s; border-radius: 20px;"></span>
                             <span class="apple-slider-knob" style="position: absolute; content: ''; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></span>
                         </label>
@@ -551,7 +552,11 @@ function renderPromptLabUI() {
         }
 
         if (!draft) {
-            alert("Nothing to enhance! Please type a draft or ensure there's text in your AI input box.");
+            if (typeof window.showToast === 'function') {
+                window.showToast("Nothing to enhance! Please type a draft or ensure there's text in your AI input box.");
+            } else {
+                alert("Nothing to enhance! Please type a draft or ensure there's text in your AI input box.");
+            }
             return;
         }
 
@@ -596,7 +601,11 @@ function renderPromptLabUI() {
                     enhanceBtn.innerHTML = "✨ Magic Enhance & Push";
                     enhanceBtn.style.opacity = "1";
                     enhanceBtn.disabled = false;
-                    alert("Enhancement Failed: " + (response?.error || 'Unknown'));
+                    if (typeof window.showToast === 'function') {
+                        window.showToast("Enhancement Failed: " + (response?.error || 'Unknown'));
+                    } else {
+                        alert("Enhancement Failed: " + (response?.error || 'Unknown'));
+                    }
                 }
             });
         };

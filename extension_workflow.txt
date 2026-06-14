@@ -1,0 +1,137 @@
+PROMPTIMITY EXTENSION ARCHITECTURE & WORKFLOW REFERENCE
+========================================================================
+
+Promptimity is a premium Chrome side-panel extension designed to streamline, 
+evaluate, structure, and enhance AI prompts directly alongside active browser 
+sessions. Below is the comprehensive guide detailing the architecture, 
+workflow cycles, and main functions of each component.
+
+========================================================================
+1. SYSTEM ARCHITECTURE & COMPONENTS
+========================================================================
+
+The extension is modularly built across standard Chrome extension APIs, 
+integrating a persistent background service worker, secure content scripts, 
+and a high-performance sidebar UI with full cloud synchronization.
+
+------------------------------------------------------------------------
+A. Extension Configuration & Service Worker
+------------------------------------------------------------------------
+* manifest.json
+  - Declares extension permissions (storage, tabs, scripting, sidePanel).
+  - Specifies background scripts, content scripts, panel paths, and icons.
+* background.js (Service Worker Hub)
+  - Acts as the central messaging router.
+  - Receives asynchronous requests from the popup/sidebar panels.
+  - Communicates with cloud LLMs (xAI API, local Ollama) for text 
+    enhancements and grammar corrections.
+  - Relays PING checks to verify connection pipeline statuses.
+
+------------------------------------------------------------------------
+B. Core UI & Orchestration Pages
+------------------------------------------------------------------------
+* popup/panel.html & popup/popup.js
+  - The bootstrap entry point for the sidebar.
+  - Controls initial panel creation, skeleton loaders, and tab switches.
+* popup/ui.js (Layout & Authentication)
+  - Manages the top-level app layout (sidebars, app container, and footers).
+  - Handles the custom authentication screens (Login and Signup).
+  - Integrates visual processing feedback ("Processing..." states) on submit.
+  - Handles password visibility toggling (Eye/Eye-Off toggle).
+* popup/sidebar.js (Workspace Manager)
+  - Renders the draggable left sidebar containing workspace tabs.
+  - Implements drag-and-drop reordering that persists tab order.
+  - Handles profile menus, logout clearing, and categories context menus.
+* popup/home.js (Prompt Evaluator & Quick Actions)
+  - Serves as the landing view of the extension.
+  - Houses the Heuristics Scorer gauge which runs live assessments on text 
+    (assessing length, action directives, formats, and bounding logic).
+  - Houses quick action buttons: "Correct Grammar" and "Enhance Prompt".
+  - Manages the "Recent Prompts" list with platform badges (Claude, GPT, 
+    Gemini) and an elegant right-aligned "Clear" text button.
+
+------------------------------------------------------------------------
+C. Specialized Tabs & Backend Integrations
+------------------------------------------------------------------------
+* popup/template.js (AI Skills Directory)
+  - Renders the specialized AI Skills reference panel.
+  - Features three categories: Developers, Students, and Productivity.
+  - Provides a real-time fuzzy search bar to filter triggers.
+  - Integrates click-to-inject logic with clipboard fallback.
+* popup/cards.js (Prompts Catalog Layouts)
+  - Dynamically renders prompt cards in customizable workspaces.
+  - Attaches card edit/delete action listeners.
+* popup/api.js (SWR Data Synchronizer)
+  - Implements a Stale-While-Revalidate (SWR) storage pattern.
+  - Interacts with Chrome local storage for snappy offline layouts.
+  - Synchronizes user profiles, workspace configurations, and prompt 
+    libraries with the centralized backend API in the background.
+
+------------------------------------------------------------------------
+D. Active Page Content Script
+------------------------------------------------------------------------
+* popup/inject.js (Page Input-Output Relay)
+  - Injected directly into active web pages.
+  - Locates the active textarea or text input on the page.
+  - Extracts the current draft to feed into the extension's live scorer.
+  - Seamlessly injects enhanced prompt strings back into the target input.
+
+
+========================================================================
+2. END-TO-END WORKFLOW CYCLES
+========================================================================
+
+------------------------------------------------------------------------
+Workflow 1: Authentication & Connection Pipeline Validation
+------------------------------------------------------------------------
+1. On opening the side panel, `bootWithHealthCheck()` checks for active 
+   token values in `chrome.storage.local`.
+2. If unauthenticated, `renderLoginUI()` displays the secure welcome screen.
+3. User types in credentials (Enter key in inputs or clicking "Continue" 
+   triggers submission).
+4. The button changes to "Processing..." and is disabled.
+5. `mockLogin()` posts authentication payloads to the backend server.
+6. On success, `showAppView()` loads the workspace sidebar, pulls synced 
+   tab structures, and caches them offline.
+
+------------------------------------------------------------------------
+Workflow 2: Live Prompt Evaluation & Enhancements
+------------------------------------------------------------------------
+1. A background polling loop in `home.js` queries the active tab via 
+   content scripts (`inject.js`) every 800ms.
+2. The tab returns the raw draft text inside its text area.
+3. `processLiveHeuristics()` calculates a dynamic quality score (0-100):
+   - Detailed length criteria (30 pts)
+   - Action verbs usage (20 pts)
+   - Specific formats like tables or JSON (30 pts)
+   - Bounding instructions (20 pts)
+4. The custom SVG gauge fills and changes color dynamically (Red -> Yellow -> Green).
+5. User clicks "Enhance Prompt" or "Correct Grammar".
+6. The service worker (`background.js`) fetches optimized output from 
+   the connected inference engine (xAI/Ollama).
+7. `inject.js` writes the new string back into the web page input area, 
+   instantly recalculating the quality score to 100%.
+
+------------------------------------------------------------------------
+Workflow 3: Workspace Tab Reordering & Cascade Cleaning
+------------------------------------------------------------------------
+1. User holds a side tab and drags it vertically.
+2. `sidebar.js` intercepts drag-and-drop event handlers, reorders 
+   the indices array in memory, and triggers backend order sync.
+3. If user right-clicks a tab and selects "Delete", `sidebar.js`:
+   - Calls backend `DELETE /api/tabs/:id`.
+   - Clears corresponding cards from cache storage.
+   - Filters out deleted card strings from the "Recent Prompts" logs.
+   - Refreshes sidebar layout instantly.
+
+------------------------------------------------------------------------
+Workflow 4: AI Skill Triggering
+------------------------------------------------------------------------
+1. User navigates to the "Skills" tab (rendered as a star icon in the sidebar).
+2. The user browses or searches for specific professional skills.
+3. Clicking on a skill card (e.g. `@react-best-practices`) dispatches 
+   an injection message.
+4. If the active tab contains a supportable input area, the skill trigger 
+   is injected.
+5. If the tab is unsupported, it copies the trigger to the clipboard 
+   and displays a Toast notification.
