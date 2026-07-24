@@ -3,7 +3,7 @@
 **Promptimity** is a Chrome extension that helps users create better AI prompts, save their favorite prompts, and reuse them whenever needed. Whether you're using ChatGPT, Claude, Gemini, or other AI assistants, Promptimity makes prompt writing faster, smarter, and more organized.
 
 ---
-/copy.svg
+
 ## ✨ Features
 
 ### 🤖 AI Prompt Optimization
