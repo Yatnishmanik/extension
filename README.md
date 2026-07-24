@@ -4,7 +4,7 @@
 
 ---
 <p align="center">
-  <img src="prompt.png" alt="Promptimity Preview" width="900">
+  <img src="prompt.png" alt="Promptimity Preview">
 </p>
 ## ✨ Features
 
